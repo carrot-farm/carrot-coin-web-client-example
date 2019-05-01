@@ -1,0 +1,51 @@
+@import "styles/utils.scss";
+
+.coin-info-root {
+  .coin-info-table {
+    td {
+      vertical-align: middle;
+      height: 44px;
+      width: 33.333333%;
+      border: 1px solid #ddd;
+      border-collapse: collapse;
+      padding: 0 15px;
+      @extend .grey-text;
+      @extend .text-darken-1;
+      .coin-name-container {
+        .coin-name {
+          color: #222222;
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+        .coin-unit {
+          font-size: 0.8rem;
+        }
+        .favorite .material-icons {
+          font-size: 0.7rem;
+        }
+      }
+      .current-price-container {
+        .current-price {
+          font-size: 1.7rem;
+        }
+      }
+      .coin-ratio-container {
+        font-size: 0.7rem;
+        .ratio-symbol {
+          width: 1.5rem;
+          content: "";
+          height: 1rem;
+          display: inline-block;
+          .material-icons {
+            font-size: 2rem;
+            position: absolute;
+            margin-top: -0.4rem;
+          }
+        }
+      }
+      .right-align {
+        @extend .right;
+      }
+    }
+  }
+}

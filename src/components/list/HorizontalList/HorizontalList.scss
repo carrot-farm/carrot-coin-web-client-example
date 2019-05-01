@@ -1,0 +1,26 @@
+.horizontal-list-root{
+   .horizontal-list-container{
+      .menu-item-wrapper{
+         &.active{
+            button{
+               color: #555555;
+               font-weight: 700
+            }
+         }
+         button{
+            color: #a0a0a0;
+         }
+         .item{
+            padding: 5px 0.5rem;
+            user-select: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            max-width: 6em;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+         }
+      }
+   }
+}

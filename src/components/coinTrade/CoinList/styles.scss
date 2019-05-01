@@ -1,0 +1,144 @@
+@import "styles/utils.scss";
+
+.coin-list-root {
+  // box-sizing: border-box;
+  // border: 1px solid;
+  @extend .grey-text;
+  // ===== inut
+  .coin-input-container {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    height: 44px;
+    box-sizing: border-box;
+    border-top: 1px solid #dddddd;
+    border-left: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
+    @extend .grey-text;
+    .input-wrapper {
+      flex: 1;
+      .input_coin-search {
+        @extend .input-clear;
+        margin: auto;
+        width: 80%;
+        line-height: 2rem;
+        margin-top: 0.3rem;
+        &::placeholder {
+          @extend .grey-text;
+        }
+      }
+    }
+    .favorite-wrapper {
+      width: 160px;
+      box-sizing: border-box;
+      border-left: 1px solid #dddddd;
+      .favorite-toggle-button {
+        @extend .button-clear;
+        font-size: 0.9rem;
+        padding: 0.6rem;
+        margin-top: 0.3rem;
+        .favorite-icon {
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
+  // ===== list table
+  .list-table {
+    font-size: 0.8rem;
+    border: 1px solid #dddddd;
+    border-collapse: collapse;
+    colgroup {
+      col {
+      }
+    }
+    // header
+    thead {
+      border: 1px solid #dddddd;
+      border-collapse: collapse;
+      th {
+        text-align: center;
+        vertical-align: middle;
+        height: 44px;
+        @extend .clearfix;
+        &.th_favorite {
+          width: 10%;
+        }
+        &.th_current-price,
+        &.th_rate,
+        &.th_trade-price {
+          width: 21%;
+        }
+        .order-button {
+          @extend .button-clear;
+          .order-name {
+            float: left;
+          }
+          .icons-container {
+            float: left;
+            position: relative;
+            width: 1px;
+            height: 1rem;
+            margin-top: -0.5rem;
+            .icon {
+              font-size: 1.2rem !important;
+              overflow: visible !important;
+              position: absolute;
+              top: 50%;
+              padding: 0;
+              margin: 0;
+              @extend .grey-text;
+              @extend .text-lighten-2;
+              &.asc-icon {
+                top: 0;
+              }
+              &.desc-icon {
+                bottom: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+    // body
+    tbody {
+      td {
+        height: 44px;
+        vertical-align: middle;
+        border-bottom: 1px solid #dddddd;
+        border-collapse: collapse;
+        padding: 0 0.5rem;
+      }
+      .favorite-col {
+        text-align: center;
+        .icon {
+          font-size: 1rem !important;
+          @extend .grey-text;
+          @extend .text-lighten-2;
+        }
+      }
+      .coin-name-col {
+        .coin-name {
+          line-height: 2em;
+        }
+        .coin-unit {
+          font-size: 0.5rem;
+        }
+      }
+      .current-price-col {
+        text-align: right;
+      }
+      .today-rate-col {
+        text-align: right;
+      }
+      .today-trade-col {
+        text-align: right;
+        font-size: 0.7rem;
+        .trade-unit {
+          font-size: 0.5rem;
+          color: #aaaaaa;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+// mobile device
+@mixin media-s() {
+  @media screen and (max-width: 600px) {
+    @content;
+  }
+}
+// tablet device
+@mixin media-m() {
+  @media screen and (min-width: 601px) and (max-width: 992px) {
+    @content;
+  }
+}
+// desktop
+@mixin media-l() {
+  @media screen and (min-width: 993px) and (max-width: 1200px) {
+    @content;
+  }
+}
+// large desktop
+@mixin media-xlm() {
+  @media screen and (min-width: 1201px) {
+    @content;
+  }
+}

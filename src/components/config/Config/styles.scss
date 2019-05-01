@@ -1,0 +1,15 @@
+.config-root {
+  color: #555555;
+  .el-col {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    .center-space {
+      flex-grow: 1;
+      content: "";
+      height: 1;
+    }
+  }
+}

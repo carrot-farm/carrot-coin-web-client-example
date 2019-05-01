@@ -1,0 +1,70 @@
+// clearfix
+.clearfix:after {
+  clear: both;
+  display: block;
+  content: "";
+}
+
+// 메인 컬러 테마
+$secondary-color: #ff9547;
+
+// about 페이지 컬러 테마
+$page_about-color: #f7fe00;
+
+// ========== section
+//최상단 섹션
+.section-main {
+  height: 768px;
+  margin-top: -80px;
+  @media screen and (max-width: 600px) {
+    height: 100vh;
+  }
+}
+.section-l {
+  width: 100%;
+  padding-top: 200px;
+  @media screen and (max-width: 600px) {
+    padding-top: 80px;
+  }
+}
+
+// ========== pc 전용 컨테이너
+.pc-container-l {
+  width: 1400px;
+  margin: auto;
+}
+
+// ========== 기본 input style remove
+.input-clear,
+.input-clear:focus {
+  -webkit-appearance: none;
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+// ========== 기본 버튼 스타일 삭제
+.button-clear,
+.button-clear[type="submit"],
+.button-clear[type="reset"] {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+}
+// ========== font weight
+.font-weight.lighter {
+  font-weight: lighter;
+}
+.font-weight.bold {
+  font-weight: bold;
+}
+// ========== font size
+.font-size.s-07 {
+  font-size: 0.7rem;
+}
+.font-size.s-08 {
+  font-size: 0.8rem;
+}

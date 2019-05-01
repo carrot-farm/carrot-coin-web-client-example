@@ -1,0 +1,9 @@
+@import "styles/utils.scss";
+.el-header {
+  height: 56px;
+  @media only screen and (min-width: 993px) {
+    height: 62px;
+  }
+}
+.el-container {
+}

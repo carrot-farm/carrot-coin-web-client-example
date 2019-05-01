@@ -1,0 +1,19 @@
+.login-modal-wrapper {
+   width: 180px;
+   padding: 20px;
+   max-width: 400px;
+
+
+   .login-container {
+      text-align: center;
+      width: inherit
+   }
+   h3 {
+      font-size: 1.5em;
+      color: #555555;
+      margin-bottom: 15px;
+   }
+   button {
+      width: 100%;
+   }
+}

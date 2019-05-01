@@ -1,0 +1,17 @@
+@import "styles/utils.scss";
+
+.trade-template-root {
+  @extend .pc-container-l;
+  display: flex;
+  flex-direction: row;
+  .coin-list-section {
+    width: 400px;
+    margin-right: 20px;
+  }
+  .chart-trade-section {
+    width: 980px;
+    .chart-section {
+      margin-bottom: 20px;
+    }
+  }
+}

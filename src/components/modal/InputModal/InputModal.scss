@@ -1,0 +1,19 @@
+.input-modal-wrapper{
+   width: 350px;
+   padding: 20px;
+   max-width: 400px;
+   .input-modal-container{
+      text-align: center;
+      width: inherit
+   }
+   h3{
+      font-size: 1.5em;
+      color: #555555;
+      margin-bottom: 15px;
+   }
+}
+@media (max-width:599px){
+   .input-modal-wrapper{
+      width: inherit;
+   }
+}

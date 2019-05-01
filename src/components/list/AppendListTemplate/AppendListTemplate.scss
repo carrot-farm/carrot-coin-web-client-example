@@ -1,0 +1,16 @@
+
+.list_append-list-template-root{
+    .list_append-list-button{
+        display: flex;
+        justify-content: center;
+        padding: 10px 0;
+    }
+    .list_append-list-template_write-button{
+        display: flex;
+        justify-content: flex-end;
+        .write-button-container{
+            position: fixed;
+            bottom: 30px;
+        }
+    }
+}

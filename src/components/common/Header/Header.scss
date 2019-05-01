@@ -1,0 +1,34 @@
+.header {
+  align-content: space-between;
+  .buttons {
+    flex: 1;
+  }
+  // .groups_container{
+  //    flex: 1;
+  //    margin: 0 10px;
+  // }
+}
+.center-column {
+  flex: 1;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+.side-menu {
+  width: 250px;
+  display: flex;
+  flex-direction: row;
+  .top {
+    height: 63px;
+  }
+  .list {
+    width: 250px;
+  }
+  .bottom {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    button {
+      width: 100%;
+    }
+  }
+}

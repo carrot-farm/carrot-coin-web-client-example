@@ -1,0 +1,31 @@
+.order-root {
+  border: 1px solid #dddddd;
+  // ===== coin info
+  .coin-info-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 44px;
+    .text {
+      padding-right: 15px;
+    }
+    > div {
+      padding: border 1px solid;
+      padding: 0 40px;
+    }
+  }
+  // ===== order table
+  .order-table {
+    th {
+      border: 1px solid #dddddd;
+      border-collapse: collapse;
+      vertical-align: middle;
+    }
+    td {
+      border: 1px solid #dddddd;
+      border-collapse: collapse;
+      height: 44px;
+      vertical-align: middle;
+    }
+  }
+}
