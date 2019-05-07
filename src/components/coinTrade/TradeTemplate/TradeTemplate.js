@@ -17,12 +17,10 @@ const TradeTemplate = ({ children }) => {
       </div>
       <div className={cx("chart-trade-section")}>
         <div className={cx("chart-section")}>
-          <CoinInfoContainer />
-          <TradeChartContainer />
+          {/* <CoinInfoContainer />
+          <TradeChartContainer /> */}
         </div>
-        <div className={cx("trade-section")}>
-          <OrderContainer />
-        </div>
+        <div className={cx("trade-section")}>{/* <OrderContainer /> */}</div>
       </div>
     </div>
   );

@@ -20,12 +20,77 @@
       border: 1px solid #dddddd;
       border-collapse: collapse;
       vertical-align: middle;
+      height: 44px;
+      text-align: center;
+      &.th_sell-volume,
+      &.th_buy-volume,
+      &.th_price {
+        width: 194px;
+      }
+      &.th_buy-button,
+      &.th_sell-button,
+      &.th_cancel-button {
+        width: 131px;
+      }
     }
     td {
       border: 1px solid #dddddd;
       border-collapse: collapse;
       height: 44px;
       vertical-align: middle;
+      padding: 0 10px;
+      &.td_cell-volume {
+        text-align: right;
+        &.td_cell-volume.left-align {
+          text-align: left;
+        }
+      }
+      &.td_cell-price {
+        text-align: right;
+        border-right: 1px solid transparent;
+        font-weight: bold;
+      }
+      &.td_cell-ratio {
+        font-weight: bold;
+        text-align: center;
+      }
+      &.td_cell-yesterday-info {
+        padding: 15px;
+        vertical-align: top;
+        font-weight: bold;
+        .td_row {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-around;
+          line-height: 1.5rem;
+          .key,
+          .value {
+            width: 50%;
+          }
+          .value {
+            color: #222222;
+          }
+        }
+      }
+      &.form-section {
+        vertical-align: top;
+        padding: 15px;
+      }
+    }
+    // 전체 체결
+    .trade-history-section {
+      padding: 0;
+    }
+    // 매수 매도 잔량
+    .selling-residual-quantity-container,
+    .buying-residual-quantity-container {
+      > span {
+        display: inline-block;
+        width: 50%;
+        &.quantity {
+          text-align: right;
+        }
+      }
     }
   }
 }

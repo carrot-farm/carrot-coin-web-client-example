@@ -87,8 +87,7 @@
               top: 50%;
               padding: 0;
               margin: 0;
-              @extend .grey-text;
-              @extend .text-lighten-2;
+              color: #bdbdbd;
               &.asc-icon {
                 top: 0;
               }
@@ -113,8 +112,8 @@
         text-align: center;
         .icon {
           font-size: 1rem !important;
-          @extend .grey-text;
-          @extend .text-lighten-2;
+          color: #bdbdbd;
+          cursor: pointer;
         }
       }
       .coin-name-col {

@@ -55,16 +55,54 @@ $page_about-color: #f7fe00;
   outline: inherit;
 }
 // ========== font weight
-.font-weight.lighter {
+.font-weight.lighter,
+.lighter {
   font-weight: lighter;
 }
-.font-weight.bold {
+.font-weight.bold,
+.bold {
   font-weight: bold;
 }
 // ========== font size
 .font-size.s-07 {
   font-size: 0.7rem;
 }
-.font-size.s-08 {
+.font-size.s-08,
+.font-size.s-0d8 {
   font-size: 0.8rem;
+}
+.font-size.s-1d2 {
+  font-size: 1.2rem;
+}
+.font-size.s-1d5 {
+  font-size: 1.5rem;
+}
+.font-size.s-2 {
+  font-size: 2rem;
+}
+// ========== display
+.inline-block {
+  display: inline-block;
+}
+.block {
+  display: block;
+}
+.flex {
+  display: flex;
+}
+// ========== flex align
+.flex.around {
+  justify-content: space-around;
+  align-items: center;
+}
+.flex.between {
+  justify-content: space-between;
+  align-items: center;
+}
+// ========== grid
+.s6 {
+  width: 50%;
+}
+.s12 {
+  width: 100%;
 }

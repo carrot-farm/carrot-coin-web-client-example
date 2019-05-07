@@ -12,7 +12,7 @@ const CoinInfo = () => {
       <table className={cx("coin-info-table")}>
         <tbody>
           <tr>
-            <td rowspan="2" className={cx("name-col")}>
+            <td rowSpan="2" className={cx("name-col")}>
               <div className={cx("coin-name-container")}>
                 <b className={cx("coin-name")}>비트코인</b> &nbsp;
                 <span className={cx("coin-unit")}>BTC/KRW</span> &nbsp;

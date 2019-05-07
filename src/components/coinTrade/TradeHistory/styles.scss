@@ -1,0 +1,23 @@
+.trade-history-root {
+  .title {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    height: 44px;
+    width: 100%;
+    border-bottom: 1px solid #dddddd;
+    justify-content: center;
+  }
+  .trade-history {
+    th {
+      background: #f5f5f5;
+    }
+    th,
+    td {
+      border: none;
+      text-align: center;
+      vertical-align: middle;
+      height: 44px;
+    }
+  }
+}
