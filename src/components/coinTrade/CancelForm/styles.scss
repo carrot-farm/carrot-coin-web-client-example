@@ -16,9 +16,6 @@
           padding: 0 10px;
           input {
             width: 120px;
-            .buying-price {
-              width: 145px;
-            }
           }
         }
         .buttons-column {
@@ -38,8 +35,7 @@
             box-sizing: border-box;
           }
         }
-        &.buying-total-price-container,
-        &.buying-price-container {
+        &.buying-total-price-container {
           width: 249px;
           justify-content: flex-end;
           padding-right: 1rem;

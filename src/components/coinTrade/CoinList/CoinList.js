@@ -3,11 +3,13 @@ import classNames from "classnames/bind";
 import { Icon } from "@material-ui/core";
 
 import styles from "./styles.scss";
+// import { selectCoin } from "../../../store/modules/stock";
 
 const cx = classNames.bind(styles);
 
 const CoinList = ({
   coins,
+  selectedCoin,
   searchOnChange,
   searchValue,
   favoriteSw,
@@ -15,7 +17,8 @@ const CoinList = ({
   favoriteItemClick,
   coinListSortingField,
   coinListSortingDirection,
-  coinListSorting
+  coinListSorting,
+  selectCoin
 }) => {
   // 필터링
   let filteredCoins = coins.filter(item => {
@@ -203,23 +206,33 @@ const CoinList = ({
         </thead>
         {/* list */}
         <tbody>
-          {filteredCoins.map((item, index) => {
+          {console.log(selectedCoin)}
+          {filteredCoins.map(item => {
+            let bgColor = "white";
+            if (selectedCoin && item.coinId === selectedCoin.coinId) {
+              bgColor = "grey lighten-5";
+            }
             return (
-              <tr key={item.coinId}>
+              <tr key={item.coinId} className={cx(`${bgColor} `)}>
                 <td className={cx(`col favorite-col `)}>
                   <Icon
                     className={cx(
                       `icon ${item.isFavorite && "pink-text text-lighten-1"}`
                     )}
                     title="즐겨찾기"
-                    onClick={() => favoriteItemClick(index)}
+                    onClick={() => favoriteItemClick(item.coinId)}
                   >
                     favorite
                   </Icon>
                 </td>
                 <td className={cx("coin-name-col")}>
-                  <div className={cx("coin-name")}>{item.coinName}</div>
-                  <div className={cx("coin-unit")}>{item.coinUnit}</div>
+                  <div
+                    className={cx("coin-name")}
+                    onClick={() => selectCoin(item.coinId)}
+                  >
+                    {item.coinName}
+                  </div>
+                  <div className={cx("coin-unit")}>{item.coinUnit}/KRW</div>
                 </td>
                 <td className={cx("current-price-col down")}>
                   <div
@@ -229,7 +242,7 @@ const CoinList = ({
                       }`
                     )}
                   >
-                    {item.currentPriceCommset}
+                    {item.currentPriceCommSet}
                   </div>
                 </td>
                 <td className={cx("today-rate-col down")}>
@@ -253,46 +266,6 @@ const CoinList = ({
               </tr>
             );
           })}
-          {/* <tr>
-            <td className={cx("col favorite-col")}>
-              <Icon className={cx("icon")}>favorite</Icon>
-            </td>
-            <td className={cx("coin-name-col")}>
-              <div className={cx("coin-name")}>비트코인</div>
-              <div className={cx("coin-unit")}>BTC/KRW</div>
-            </td>
-            <td className={cx("current-price-col down")}>
-              <div className={cx("current-price")}>6,650,000</div>
-            </td>
-            <td className={cx("today-rate-col down")}>
-              <div className={cx("rate")}>-1.30%</div>
-            </td>
-            <td className={cx("today-trade-col")}>
-              <span className={cx("tody-trade-rate")}>1,390.70</span>
-              &nbsp;
-              <span className={cx("trade-unit")}>백만</span>
-            </td>
-          </tr>
-          <tr>
-            <td className={cx("col favorite-col")}>
-              <Icon className={cx("icon")}>favorite</Icon>
-            </td>
-            <td className={cx("coin-name-col")}>
-              <div className={cx("coin-name")}>비트코인캐시</div>
-              <div className={cx("coin-unit")}>BCH/KRW</div>
-            </td>
-            <td className={cx("current-price-col up")}>
-              <div className={cx("current-price")}>279,200</div>
-            </td>
-            <td className={cx("today-rate-col up")}>
-              <div className={cx("rate ")}>+5.36%</div>
-            </td>
-            <td className={cx("today-trade-col")}>
-              <span className={cx("today-trade-rate")}>775.07</span>
-              &nbsp;
-              <span className={cx("trade-unit")}>백만</span>
-            </td>
-          </tr> */}
         </tbody>
       </table>
     </div>

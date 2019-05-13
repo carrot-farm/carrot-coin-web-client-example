@@ -3,30 +3,10 @@ import classNames from "classnames/bind";
 import { Icon } from "@material-ui/core";
 
 import styles from "./styles.scss";
-import { commSet } from "lib/tools";
-import Elements from "components/common/Elements";
 
 const cx = classNames.bind(styles);
-const { InputCommSet } = Elements;
 
-const BuyingForm = ({
-  buttonClass,
-  buttonText,
-  myInfo,
-  submitClick,
-  buyingVolumeChange,
-  buyingVolumeCommset,
-  buyingPriceChange,
-  buyingPriceCommset,
-  handlePriceBlur,
-  handleUpperTickClick,
-  handleLowerTickClick,
-  buyingTotalPriceCommset,
-  handleBuyingTotalPriceChange,
-  handleSubmitClick
-}) => {
-  const { ownPrice } = myInfo;
-
+const SellingForm = () => {
   return (
     <div className={cx("buying-form-root ")}>
       <dl className={cx("current-price-container flex between")}>
@@ -38,31 +18,29 @@ const BuyingForm = ({
           매수가능액
         </dt>
         <dd>
-          <span className={cx("current-price font-size s-1d5")}>
-            {commSet(ownPrice)}
-          </span>
+          <span className={cx("current-price font-size s-1d5")}>0</span>
           &nbsp; KRW
         </dd>
       </dl>
-
-      {/* form */}
-      <form className={cx("buying-form")} onSubmit={submitClick}>
+      <form className={cx("buying-form")}>
         {/* 매수수량 */}
         <dl className={cx("flex between")}>
           <dt className={cx("bold grey-text text-darken-2 bold")}>매수수량</dt>
-          <dd
-            className={cx("input-container buying-price-container flex around")}
-          >
+          <dd className={cx("input-container flex around")}>
             <div className={cx("input-column")}>
-              <InputCommSet
-                name={"buyingVolume"}
+              <input
                 className={cx("right-align input-clear grey-text")}
-                value={buyingVolumeCommset}
-                digits={4}
-                onChange={buyingVolumeChange}
+                value={"0"}
               />
               &nbsp;&nbsp;
               <span className={cx("order-unit")}>BTC</span>
+            </div>
+            <div className={cx("buttons-column center-align")}>
+              <button
+                className={cx("buttons-column button-clear center-align")}
+              >
+                <Icon>keyboard_arrow_down</Icon>
+              </button>
             </div>
           </dd>
         </dl>
@@ -71,31 +49,24 @@ const BuyingForm = ({
           <dt className={cx("bold grey-text text-darken-2 ")}>매수가격</dt>
           <dd className={cx("input-container flex around")}>
             <div className={cx("input-column")}>
-              <InputCommSet
-                name={"buyingPrice"}
-                className={cx("left-align buying-price input-clear grey-text")}
-                onChange={buyingPriceChange}
-                value={buyingPriceCommset}
-                onBlur={handlePriceBlur}
+              <input
+                className={cx("left-align input-clear grey-text")}
+                value={"6,283,000"}
               />
               &nbsp;&nbsp;
             </div>
             <div className={cx("buttons-column center-align")}>
               <button
-                type="button"
                 className={cx(
                   " button-clear lower-price-button s6 font-size s-1d5"
                 )}
-                onClick={handleLowerTickClick}
               >
                 -
               </button>
               <button
-                type="button"
                 className={cx(
                   " button-clear upper-price-button s6 font-size s-1d5"
                 )}
-                onClick={handleUpperTickClick}
               >
                 +
               </button>
@@ -111,13 +82,12 @@ const BuyingForm = ({
             )}
           >
             <div className={cx("input-column")}>
-              <InputCommSet
+              <input
                 name={"buying-total-price"}
                 className={cx(
                   "buying-total-price right-align input-clear grey-text"
                 )}
-                onChange={handleBuyingTotalPriceChange}
-                value={buyingTotalPriceCommset}
+                value={"0"}
               />
               &nbsp;&nbsp;
               <span
@@ -139,18 +109,16 @@ const BuyingForm = ({
             )}
           >
             <div>최소 주문 수량: 0.001</div>
-            {/* <div>수수료: 0.1%</div> */}
+            <div>수수료: 0.1%</div>
           </dd>
         </dl>
         <div className={cx("order-button-container")}>
           <button
-            type="submit"
             className={cx(
-              `order-submit-button button-clear s12 font-size s-1 ${buttonClass}`
+              "order-submit-button button-clear s12 red lighten-2 white-text font-size s-1"
             )}
-            onClick={handleSubmitClick}
           >
-            {buttonText}
+            주문하기
           </button>
         </div>
       </form>
@@ -158,4 +126,4 @@ const BuyingForm = ({
   );
 };
 
-export default BuyingForm;
+export default SellingForm;

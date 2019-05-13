@@ -8,8 +8,8 @@ import Head from "components/common/Head";
 class HeadContainer extends Component {
   componentDidMount = () => {
     const { BaseActions } = this.props;
-    BaseActions.setHeadTitle("할일 리스트");
-    BaseActions.setHeadDescription("리액트 공부경 개인 할일 리스트");
+    BaseActions.setHeadTitle("당근 코인");
+    BaseActions.setHeadDescription("코인 트레이딩 예시 사이트");
   };
   render() {
     const { headTitle, headDescription } = this.props;

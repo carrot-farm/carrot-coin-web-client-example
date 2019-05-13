@@ -13,7 +13,6 @@ class CoinLisContainer extends Component {
   searchOnChange = e => {
     const { StockActions } = this.props;
     const { value } = e.target;
-    // console.log("searchValue: ", this.props.searchValue);
     StockActions.setSearchValue(value);
   };
 
@@ -24,9 +23,9 @@ class CoinLisContainer extends Component {
   };
 
   // 아이템 즐겨찾기
-  favoriteItemClick = index => {
+  favoriteItemClick = coinId => {
     const { StockActions } = this.props;
-    StockActions.toggleFavoriteItem(index);
+    StockActions.toggleFavoriteItem(coinId);
   };
 
   // 코인 리스트 정렬
@@ -35,9 +34,16 @@ class CoinLisContainer extends Component {
     StockActions.setCoinListSorting(field);
   };
 
+  // 활성화 코인 선택
+  selectCoin = coinId => {
+    const { StockActions } = this.props;
+    StockActions.selectCoin(coinId);
+  };
+
   render() {
     const {
       coins,
+      selectedCoin,
       searchValue,
       favoriteSw,
       coinListSortingField,
@@ -46,6 +52,7 @@ class CoinLisContainer extends Component {
     return (
       <CoinList
         coins={coins}
+        selectedCoin={selectedCoin}
         searchOnChange={this.searchOnChange}
         searchValue={searchValue}
         favoriteSw={favoriteSw}
@@ -54,6 +61,7 @@ class CoinLisContainer extends Component {
         coinListSortingField={coinListSortingField}
         coinListSortingDirection={coinListSortingDirection}
         coinListSorting={this.coinListSorting}
+        selectCoin={this.selectCoin}
       />
     );
   }
@@ -63,6 +71,7 @@ export default connect(
   state => ({
     isLogged: state.base.get("isLogged"),
     coins: state.stock.get("coins"),
+    selectedCoin: state.stock.get("selectedCoin"),
     searchValue: state.stock.get("searchValue"),
     favoriteSw: state.stock.get("favoriteSw"),
     coinListSortingField: state.stock.get("coinListSortingField"),

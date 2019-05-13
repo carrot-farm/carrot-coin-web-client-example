@@ -31,6 +31,42 @@
       &.th_sell-button,
       &.th_cancel-button {
         width: 131px;
+        background: #f9f9f9;
+        position: relative;
+        &:before {
+          transition: all 0.2s linear;
+          content: "";
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          height: 0;
+        }
+        &.active {
+          background: #ffffff;
+          font-weight: bold;
+          &:before {
+            height: 3px;
+          }
+        }
+      }
+
+      &.th_buy-button.active {
+        color: red;
+        &:before {
+          background: red;
+        }
+      }
+      &.th_sell-button.active {
+        color: blue;
+        &:before {
+          background: blue;
+        }
+      }
+      &.th_cancel-button.active {
+        color: #222222;
+        &:before {
+          background: #222222;
+        }
       }
     }
     td {
@@ -44,6 +80,12 @@
         &.td_cell-volume.left-align {
           text-align: left;
         }
+      }
+      &.selling_td {
+        background: #e8eef3;
+      }
+      &.buying_td {
+        background: #ffebee;
       }
       &.td_cell-price {
         text-align: right;

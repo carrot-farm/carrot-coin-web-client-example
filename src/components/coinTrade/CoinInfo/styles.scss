@@ -9,8 +9,7 @@
       border: 1px solid #ddd;
       border-collapse: collapse;
       padding: 0 15px;
-      @extend .grey-text;
-      @extend .text-darken-1;
+      color: #bdbdbd;
       .coin-name-container {
         .coin-name {
           color: #222222;

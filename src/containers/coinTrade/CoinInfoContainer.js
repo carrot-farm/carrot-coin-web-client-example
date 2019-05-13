@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
 import * as baseActions from "store/modules/base";
+import * as stockActions from "store/modules/stock";
 import CoinInfo from "components/coinTrade/CoinInfo";
 
 class CoinInfoContainer extends Component {
@@ -11,15 +12,17 @@ class CoinInfoContainer extends Component {
   componentWillUnmount() {}
 
   render() {
-    return <CoinInfo />;
+    const { selectedCoin } = this.props;
+    return <CoinInfo selectedCoin={selectedCoin} />;
   }
 }
 
 export default connect(
   state => ({
-    isLogged: state.base.get("isLogged")
+    selectedCoin: state.stock.get("selectedCoin")
   }),
   dispatch => ({
-    BaseActions: bindActionCreators(baseActions, dispatch)
+    BaseActions: bindActionCreators(baseActions, dispatch),
+    StockActions: bindActionCreators(stockActions, dispatch)
   })
 )(CoinInfoContainer);

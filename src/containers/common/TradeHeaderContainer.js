@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux";
 import { withRouter } from "react-router-dom"; //history 객체에 연결하기 위해
 
 import * as baseActions from "store/modules/base";
+import * as stockActions from "store/modules/stock";
 import TradeHeader from "components/common/TradeHeader";
 
 class HeaderContainer extends Component {
@@ -23,6 +24,6 @@ class HeaderContainer extends Component {
 export default connect(
   state => ({}),
   dispatch => ({
-    BaseActions: bindActionCreators(baseActions, dispatch)
+    StockActions: bindActionCreators(stockActions, dispatch)
   })
 )(withRouter(HeaderContainer));
