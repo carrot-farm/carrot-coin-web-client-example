@@ -101,42 +101,44 @@
     }
     // body
     tbody {
-      td {
-        height: 44px;
-        vertical-align: middle;
-        border-bottom: 1px solid #dddddd;
-        border-collapse: collapse;
-        padding: 0 0.5rem;
-      }
-      .favorite-col {
-        text-align: center;
-        .icon {
-          font-size: 1rem !important;
-          color: #bdbdbd;
-          cursor: pointer;
+      tr {
+        cursor: pointer;
+        td {
+          height: 44px;
+          vertical-align: middle;
+          border-bottom: 1px solid #dddddd;
+          border-collapse: collapse;
+          padding: 0 0.5rem;
         }
-      }
-      .coin-name-col {
-        .coin-name {
-          line-height: 2em;
-          cursor: pointer;
+        .favorite-col {
+          text-align: center;
+          .icon {
+            font-size: 1rem !important;
+            color: #bdbdbd;
+          }
         }
-        .coin-unit {
-          font-size: 0.5rem;
+        .coin-name-col {
+          .coin-name {
+            line-height: 2em;
+            cursor: pointer;
+          }
+          .coin-unit {
+            font-size: 0.5rem;
+          }
         }
-      }
-      .current-price-col {
-        text-align: right;
-      }
-      .today-rate-col {
-        text-align: right;
-      }
-      .today-trade-col {
-        text-align: right;
-        font-size: 0.7rem;
-        .trade-unit {
-          font-size: 0.5rem;
-          color: #aaaaaa;
+        .current-price-col {
+          text-align: right;
+        }
+        .today-rate-col {
+          text-align: right;
+        }
+        .today-trade-col {
+          text-align: right;
+          font-size: 0.7rem;
+          .trade-unit {
+            font-size: 0.5rem;
+            color: #aaaaaa;
+          }
         }
       }
     }

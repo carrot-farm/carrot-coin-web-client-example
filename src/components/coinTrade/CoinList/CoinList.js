@@ -206,14 +206,17 @@ const CoinList = ({
         </thead>
         {/* list */}
         <tbody>
-          {console.log(selectedCoin)}
           {filteredCoins.map(item => {
             let bgColor = "white";
             if (selectedCoin && item.coinId === selectedCoin.coinId) {
               bgColor = "grey lighten-5";
             }
             return (
-              <tr key={item.coinId} className={cx(`${bgColor} `)}>
+              <tr
+                key={item.coinId}
+                className={cx(`${bgColor} `)}
+                onClick={() => selectCoin(item.coinId)}
+              >
                 <td className={cx(`col favorite-col `)}>
                   <Icon
                     className={cx(
@@ -226,12 +229,7 @@ const CoinList = ({
                   </Icon>
                 </td>
                 <td className={cx("coin-name-col")}>
-                  <div
-                    className={cx("coin-name")}
-                    onClick={() => selectCoin(item.coinId)}
-                  >
-                    {item.coinName}
-                  </div>
+                  <div className={cx("coin-name")}>{item.coinName}</div>
                   <div className={cx("coin-unit")}>{item.coinUnit}/KRW</div>
                 </td>
                 <td className={cx("current-price-col down")}>
@@ -258,7 +256,7 @@ const CoinList = ({
                 </td>
                 <td className={cx("today-trade-col")}>
                   <span className={cx("tody-trade-value bold")}>
-                    {item.todayTotalTradePrice}
+                    {parseInt(item.todayTotalTradePrice / 1000000, 10)}
                   </span>
                   &nbsp;
                   <span className={cx("trade-unit")}>백만</span>

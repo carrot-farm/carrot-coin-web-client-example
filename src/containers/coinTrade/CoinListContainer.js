@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux";
 
 import * as baseActions from "store/modules/base";
 import * as stockActions from "store/modules/stock";
+import * as buyingFormActions from "store/modules/buyingForm";
 import CoinList from "components/coinTrade/CoinList";
 
 class CoinLisContainer extends Component {
@@ -49,10 +50,11 @@ class CoinLisContainer extends Component {
       coinListSortingField,
       coinListSortingDirection
     } = this.props;
+    const _selectedCoin = selectedCoin.toJS();
     return (
       <CoinList
         coins={coins}
-        selectedCoin={selectedCoin}
+        selectedCoin={_selectedCoin}
         searchOnChange={this.searchOnChange}
         searchValue={searchValue}
         favoriteSw={favoriteSw}
@@ -79,6 +81,7 @@ export default connect(
   }),
   dispatch => ({
     BaseActions: bindActionCreators(baseActions, dispatch),
-    StockActions: bindActionCreators(stockActions, dispatch)
+    StockActions: bindActionCreators(stockActions, dispatch),
+    BuyingFormActions: bindActionCreators(buyingFormActions, dispatch)
   })
 )(CoinLisContainer);

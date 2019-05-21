@@ -37,16 +37,19 @@ export const addZero = (n, digits) => {
 // ===== commset
 export const commSet = (_n, useFloat) => {
   let n = useFloat ? parseFloat(_n) : parseInt(_n, 10);
-  if (n == 0) return 0;
+  if (n === 0) return 0;
   var reg = /(^[+-]?\d+)(\d{3})/;
   n = n + "";
   while (reg.test(n)) n = n.replace(reg, "$1" + "," + "$2");
+  // console.log(3, n);
   return n;
 };
 
 // ===== 콤마 제거
 export const unCommSet = (_n, useFloat) => {
-  return parseFloat(_n.replace(/,/g, ""));
+  if (useFloat) {
+    return parseFloat(_n.replace(/,/g, ""));
+  }
   return parseInt(_n.replace(/,/g, ""), 10);
 };
 
@@ -86,26 +89,33 @@ export const inputCommSet = (_n, digits) => {
   let useFloat = digits ? true : false;
   let number;
   let comm = _n + "";
+  let splitDot; // digits설정 시 문자를 잘라서 0을 몇번 허용할 것인지 정한다.
+  let passDot = false; // digits 시 dot입력 중인지 확인 후 통과 여부
+  let zeroLen = 0; // 0이 반복되는 횟수.
 
   // console.log("---> tools.inputCommSet (", _n, ",", digits || "", ")");
   // 0을 입력 하거나 삭제해서 "" 이 입력되었을 때 기본값 리턴
   if (_n === "0" || _n === 0 || _n === "") {
     return result;
+  } else if (_n === ".") {
+    return {
+      number: 0,
+      numberCommSet: "0."
+    };
   }
 
   if (typeof digits !== "number" && digits !== undefined) {
     throw "digits는 반드시 정수여야 합니다.";
   }
-  // console.log(`> type ${type}`);
 
   // 문자일 경우
   if (type === "string") {
-    number = unCommSet(_n);
-
     if (digits) {
       useFloat = true;
+      number = unCommSet(_n, useFloat);
       number = parseFloat(number, useFloat);
     } else {
+      number = unCommSet(_n);
       number = parseInt(number, 10);
     }
     // console.log("> 문자.uncommset: ", number);
@@ -119,8 +129,28 @@ export const inputCommSet = (_n, digits) => {
     // 실수.
     if (digits) {
       number = parseFloat(decimalFloor(number, digits));
-      if (_n.substr(_n.length - 1) === "." && repeatCount(_n, ".") === 1) {
-        // console.log("> dot : ", number, _n);
+      splitDot = _n.split(".");
+      // console.log("> splitDot : ", splitDot, _n);
+      if (splitDot.length > 1) {
+        // 0이 계속 입력 중인지 확인.
+        for (let i = 0, len = splitDot[1].length; i < len; i++) {
+          // console.log("> splitDot for : ", splitDot[1][i]);
+          if (splitDot[1][i] === "0") {
+            passDot = true;
+            zeroLen++;
+          } else {
+            passDot = false;
+          }
+        }
+        if (passDot === true && zeroLen > digits) {
+          return result;
+        }
+      }
+      if (
+        (_n.substr(_n.length - 1) === "." || passDot === true) &&
+        repeatCount(_n, ".") === 1
+      ) {
+        // console.log("|||| dot : ", number, _n);
         return {
           number: number,
           numberCommSet: _n
@@ -129,11 +159,11 @@ export const inputCommSet = (_n, digits) => {
     }
 
     if (isNaN(number)) {
-      // console.log("> 허용하지 않는 문자: ", _n);
+      // console.log("|||| 허용하지 않는 문자: ", _n);
       return;
     }
 
-    // console.log("> 문자 pass: ", number);
+    // console.log("> 문자 pass: ", number, commSet(number, useFloat));
     return {
       number: number,
       numberCommSet: commSet(number, useFloat)
@@ -154,7 +184,7 @@ export const inputCommSet = (_n, digits) => {
     useFloat = true;
   }
 
-  console.log("> number pass");
+  // console.log("|||| number pass", number, commSet(comm, useFloat));
   return {
     number: number,
     numberCommSet: commSet(comm, useFloat)
@@ -187,13 +217,30 @@ export const calcRatio = (_old, _new, digits = 2) => {
 
 // ===== json 정렬
 export const jsonSort = (list, field, sortDirection) => {
-  console.log("---> jsonSrot: ", list, field, sortDirection);
+  // console.log("---> jsonSrot: ", list, field, sortDirection);
   if (sortDirection === false) {
+    // desc
     return list.sort((a, b) => {
       return a[field] > b[field] ? -1 : a[field] < b[field] ? 1 : 0;
     });
   }
   return list.sort((a, b) => {
+    // asc
     return a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0;
   });
+};
+
+// ===== 지정된 필드으 json 전부 찾기
+export const jsonFindAll = (_list, field, value) => {
+  let list = [];
+  let i = 0,
+    k = 0,
+    len = _list.length;
+
+  for (; i < len; i++) {
+    if (_list[i][field] === value) {
+      list[k++] = _list[i];
+    }
+  }
+  return list;
 };

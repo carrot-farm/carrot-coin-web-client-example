@@ -14,7 +14,7 @@ const CoinInfo = ({ selectedCoin }) => {
     coinUnit,
     isFavorite,
     currentPrice,
-    currentPriceCommset,
+    currentPriceCommSet,
     movingRatio,
     dayBeforePrice,
     todayTopPrice,
@@ -54,7 +54,7 @@ const CoinInfo = ({ selectedCoin }) => {
               </div>
               <div className={cx(`current-price-container ${textColor}`)}>
                 <span className={cx(`current-price `)}>
-                  {currentPriceCommset}
+                  {currentPriceCommSet}
                 </span>
                 &nbsp;
                 <span className={cx("price-unit")}>KRW</span>

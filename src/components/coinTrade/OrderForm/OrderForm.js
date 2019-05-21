@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames/bind";
-import { Icon } from "@material-ui/core";
+import { Icon, Menu, MenuItem } from "@material-ui/core";
 
 import styles from "./styles.scss";
 import { commSet } from "lib/tools";
@@ -9,73 +9,130 @@ import Elements from "components/common/Elements";
 const cx = classNames.bind(styles);
 const { InputCommSet } = Elements;
 
-const BuyingForm = ({
-  buttonClass,
-  buttonText,
-  myInfo,
-  submitClick,
-  buyingVolumeChange,
-  buyingVolumeCommset,
-  buyingPriceChange,
-  buyingPriceCommset,
+const OrderForm = ({
+  topValueText,
+  topValueUnit,
+  topValueCommset,
+  volumeText,
+  volumeUnit,
+  volumeCommset,
+  handleVolumeChange,
+  handleVolumeMenuClick,
+  handleSetVolumeRatio,
+  volumeMenuAnchorEl,
+  priceText,
+  priceCommset,
+  handlePriceChange,
   handlePriceBlur,
   handleUpperTickClick,
   handleLowerTickClick,
-  buyingTotalPriceCommset,
+  totalPriceText,
+  totalPriceCommset,
   handleBuyingTotalPriceChange,
+  minimumOrder,
+  buttonText,
+  buttonClass,
   handleSubmitClick
 }) => {
-  const { ownPrice } = myInfo;
-
   return (
-    <div className={cx("buying-form-root ")}>
+    <div className={cx("order-form-root ")}>
       <dl className={cx("current-price-container flex between")}>
         <dt
           className={cx(
             "font-size .s-1d2 font-weight bold grey-text text-darken-2"
           )}
         >
-          매수가능액
+          {topValueText}
         </dt>
         <dd>
           <span className={cx("current-price font-size s-1d5")}>
-            {commSet(ownPrice)}
+            {topValueCommset}
           </span>
-          &nbsp; KRW
+          &nbsp; {topValueUnit}
         </dd>
       </dl>
 
       {/* form */}
-      <form className={cx("buying-form")} onSubmit={submitClick}>
-        {/* 매수수량 */}
+      <form className={cx("order-form")}>
+        {/* 수량 */}
         <dl className={cx("flex between")}>
-          <dt className={cx("bold grey-text text-darken-2 bold")}>매수수량</dt>
+          <dt className={cx("bold grey-text text-darken-2 bold")}>
+            {volumeText}
+          </dt>
           <dd
-            className={cx("input-container buying-price-container flex around")}
+            className={cx("input-container order-price-container flex around")}
           >
             <div className={cx("input-column")}>
               <InputCommSet
                 name={"buyingVolume"}
                 className={cx("right-align input-clear grey-text")}
-                value={buyingVolumeCommset}
+                value={volumeCommset}
                 digits={4}
-                onChange={buyingVolumeChange}
+                onChange={handleVolumeChange}
               />
               &nbsp;&nbsp;
-              <span className={cx("order-unit")}>BTC</span>
+              <span className={cx("order-unit grey-text text-lighten-1 ")}>
+                {volumeUnit}
+              </span>
+            </div>
+            <div className={cx("buttons-column center-align")}>
+              <button
+                type="button"
+                className={cx("buttons-column button-clear center-align")}
+                onClick={handleVolumeMenuClick}
+              >
+                <Icon>keyboard_arrow_down</Icon>
+              </button>
+              <Menu
+                id="contents-form-volume-menu"
+                anchorEl={volumeMenuAnchorEl}
+                open={Boolean(volumeMenuAnchorEl)}
+                onClose={() => {
+                  handleVolumeMenuClick();
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    handleSetVolumeRatio(100);
+                  }}
+                >
+                  100%
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSetVolumeRatio(50);
+                  }}
+                >
+                  50%
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSetVolumeRatio(25);
+                  }}
+                >
+                  25%
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleSetVolumeRatio(10);
+                  }}
+                >
+                  10%
+                </MenuItem>
+              </Menu>
             </div>
           </dd>
         </dl>
-        {/* 매수가격 */}
+        {/* 가격 */}
         <dl className={cx("flex between")}>
-          <dt className={cx("bold grey-text text-darken-2 ")}>매수가격</dt>
+          <dt className={cx("bold grey-text text-darken-2 ")}>{priceText}</dt>
           <dd className={cx("input-container flex around")}>
             <div className={cx("input-column")}>
               <InputCommSet
                 name={"buyingPrice"}
                 className={cx("left-align buying-price input-clear grey-text")}
-                onChange={buyingPriceChange}
-                value={buyingPriceCommset}
+                onChange={handlePriceChange}
+                value={priceCommset}
                 onBlur={handlePriceBlur}
               />
               &nbsp;&nbsp;
@@ -102,9 +159,11 @@ const BuyingForm = ({
             </div>
           </dd>
         </dl>
-        {/* 매수총액 */}
+        {/* total price */}
         <dl className={cx("flex between")}>
-          <dt className={cx("bold grey-text text-darken-2 bold")}>매수총액</dt>
+          <dt className={cx("bold grey-text text-darken-2 bold")}>
+            {totalPriceText}
+          </dt>
           <dd
             className={cx(
               "input-container buying-total-price-container flex around"
@@ -117,7 +176,7 @@ const BuyingForm = ({
                   "buying-total-price right-align input-clear grey-text"
                 )}
                 onChange={handleBuyingTotalPriceChange}
-                value={buyingTotalPriceCommset}
+                value={totalPriceCommset}
               />
               &nbsp;&nbsp;
               <span
@@ -138,7 +197,7 @@ const BuyingForm = ({
               "description-container font-size grey-text lighten-2"
             )}
           >
-            <div>최소 주문 수량: 0.001</div>
+            <div>최소 주문 수량: {minimumOrder}</div>
             {/* <div>수수료: 0.1%</div> */}
           </dd>
         </dl>
@@ -158,4 +217,4 @@ const BuyingForm = ({
   );
 };
 
-export default BuyingForm;
+export default OrderForm;

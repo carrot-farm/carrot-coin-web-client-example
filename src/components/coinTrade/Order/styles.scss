@@ -91,10 +91,12 @@
         text-align: right;
         border-right: 1px solid transparent;
         font-weight: bold;
+        cursor: pointer;
       }
       &.td_cell-ratio {
         font-weight: bold;
         text-align: center;
+        cursor: pointer;
       }
       &.td_cell-yesterday-info {
         padding: 15px;

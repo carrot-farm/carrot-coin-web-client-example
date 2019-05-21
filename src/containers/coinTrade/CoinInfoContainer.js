@@ -13,7 +13,8 @@ class CoinInfoContainer extends Component {
 
   render() {
     const { selectedCoin } = this.props;
-    return <CoinInfo selectedCoin={selectedCoin} />;
+    const _selectedCoin = selectedCoin.toJS();
+    return <CoinInfo selectedCoin={_selectedCoin} />;
   }
 }
 

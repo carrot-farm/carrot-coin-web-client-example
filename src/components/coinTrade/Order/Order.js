@@ -3,21 +3,23 @@ import classNames from "classnames/bind";
 
 import styles from "./styles.scss";
 import BuyingFormContainer from "containers/coinTrade/BuyingFormContainer";
-import SellingForm from "../SellingForm";
+import SellFormContainer from "containers/coinTrade/SellFormContainer";
+// import SellingForm from "../SellingForm";
 import CancelForm from "../CancelForm";
 import OrderEtcInfo from "../OrderEtcInfo";
 // import TradeHistory from "../TradeHistory";
 import { sortOrders } from "lib/common";
-import { commSet, calcRatio } from "lib/tools";
+// import { commSet, calcRatio, jsonSort } from "lib/tools";
 
 const cx = classNames.bind(styles);
 
 const Order = ({
   selectedCoin,
   activeForm,
-  activeFormClick,
   buyingOrders,
-  sellingOrders
+  sellingOrders,
+  activeFormClick,
+  handlePriceClick
 }) => {
   const {
     coinName,
@@ -26,18 +28,21 @@ const Order = ({
     // currentPrice,
     currentPriceCommSet,
     movingRatio,
-    dayBeforePrice,
+    // dayBeforePrice,
     dayBeforePriceCommSet,
     dayBeforeDiffCommset,
     todayTotalTradePrice,
     todayTopPriceCommSet,
     todayTopPriceRatio,
     todayLowerPriceCommSet,
-    todayLowerPriceRatio
+    todayLowerPriceRatio,
+    remainingBuyAmount,
+    remainingSellAmount
   } = selectedCoin;
 
   let currentTextColor = "";
   let _buyingOrders = []; // 매수 주문
+  let _sellingOrders = [];
 
   // 현재가 텍스트 컬러.
   if (movingRatio > 0) {
@@ -45,58 +50,24 @@ const Order = ({
   } else if (movingRatio < 0) {
     currentTextColor = "blue-text";
   }
-  // 매수 주문 처리
-  // console.log("---> run", coinId, buyingOrders.size);
+
+  // 주문 filter, sort, commset
   if (coinId !== undefined && buyingOrders.size > 0) {
-    _buyingOrders = sortOrders(buyingOrders.toJS(), selectedCoin, false);
-    // for (let i = 0, len = 11; i < len; i++) {
-    //   if (sortedOrders[i]) {
-    //     _buyingOrders[i] = {
-    //       ...sortedOrders[i],
-    //       orderAmountCommSet: commSet(sortedOrders[i].orderAmount),
-    //       orderPriceCommSet: commSet(sortedOrders[i].orderPrice),
-    //       orderRatio: commSet(
-    //         calcRatio(dayBeforePrice, sortedOrders[i].orderPrice)
-    //       )
-    //     };
-    //     if (_buyingOrders[i].orderRatio > 0) {
-    //       _buyingOrders[i].orderRatio = "+" + _buyingOrders[i].orderRatio;
-    //     }
-    //   } else {
-    //     _buyingOrders[i] = {
-    //       orderId: "b" + i
-    //     };
-    //   }
-    //   // _buyingOrders[i] = sortedOrders[i] ? sortedOrders[i] : {};
-    // }
-    // console.log("---", _buyingOrders);
-    // // const arr = new Array(10);
-    // const b = ['11', 22, 33];
-    // console.log("---> arr: ", arr);
-    // arr = [...b];
-    // console.log("---> arr2: ", arr);
-    // console.log("---> buyingOrders", coinId, buyingOrders.size);
-    // // order index 찾기.
-    // _selectedCoinIndex = buyingOrders.findIndex(item => {
-    //   return item.coinId === selectedCoin.coinId;
-    // });
-    // console.log("> _selectedCoinIndex: ", _selectedCoinIndex);
-    // // 매수 order 가져오기.
-    // _buyingOrders = buyingOrders.get(_selectedCoinIndex).orders;
-    // console.log("> _buyingOrders: ", _buyingOrders);
-    // _buyingOrders = _buyingOrders.filter(item => {
-    //   return !item.isConclusion ? true : false;
-    // });
-    // console.log("> filtered: ", _buyingOrders);
-    // // order 정렬
-    // _buyingOrders = _buyingOrders.sort((a, b) => {
-    //   return a.orderPrice > b.orderPrice
-    //     ? -1
-    //     : a.orderPrice < b.orderPrice
-    //     ? 1
-    //     : 0;
-    // });
-    // console.log("> sorting: ", _buyingOrders);
+    // 매수 주문
+    if (buyingOrders.size > 0) {
+      _buyingOrders = sortOrders(buyingOrders.toJS(), selectedCoin, false);
+    }
+    // 매도 주문
+    if (sellingOrders.size > 0) {
+      _sellingOrders = sortOrders(
+        sellingOrders.toJS(),
+        selectedCoin,
+        true,
+        true
+      );
+      // _sellingOrders = jsonSort(_sellingOrders, "orderPrice", false);
+      // console.log("----", _sellingOrders);
+    }
   }
 
   return (
@@ -176,74 +147,72 @@ const Order = ({
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-            {/* etc coins info */}
-            <td rowSpan="10" className={cx("td_cell-yesterday-info")}>
-              <OrderEtcInfo
-                dayBeforePriceCommSet={dayBeforePriceCommSet}
-                todayTopPriceRatio={todayTopPriceRatio}
-                todayTopPriceCommSet={todayTopPriceCommSet}
-                todayLowerPriceRatio={todayLowerPriceRatio}
-                todayLowerPriceCommSet={todayLowerPriceCommSet}
-              />
-            </td>
-
-            {/* forms */}
-            <td className={cx("form-section")} rowSpan="10" colSpan="3">
-              {activeForm === "buyForm" && <BuyingFormContainer />}
-              {activeForm === "sellForm" && <SellingForm />}
-              {activeForm === "cancelForm" && <CancelForm />}
-            </td>
-          </tr>
-          {/* 매도주문 */}
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-volume selling_td")}>0.154</td>
-            <td className={cx("td_cell-price selling_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio selling_td")}>-1.38%</td>
-          </tr>
+          {/* 매도 주문 */}
+          {_sellingOrders.map((item, index) => {
+            // console.log("*** index: ", index, item);
+            if (!item.orderId) {
+              item.orderId = "s" + index;
+            }
+            if (index === 0) {
+              // 첫번째 tr
+              return (
+                <tr key={item.orderId}>
+                  <td className={cx("td_cell-volume selling_td")}>
+                    {item.orderAmountCommSet}
+                  </td>
+                  <td
+                    className={cx("td_cell-price selling_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
+                    {item.orderPriceCommSet}
+                  </td>
+                  <td
+                    className={cx("td_cell-ratio selling_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
+                    {item.orderRatioCommSet}
+                  </td>
+                  {/* etc coins info */}
+                  <td rowSpan="10" className={cx("td_cell-yesterday-info")}>
+                    <OrderEtcInfo
+                      dayBeforePriceCommSet={dayBeforePriceCommSet}
+                      todayTopPriceRatio={todayTopPriceRatio}
+                      todayTopPriceCommSet={todayTopPriceCommSet}
+                      todayLowerPriceRatio={todayLowerPriceRatio}
+                      todayLowerPriceCommSet={todayLowerPriceCommSet}
+                    />
+                  </td>
+                  {/* forms */}
+                  <td className={cx("form-section")} rowSpan="10" colSpan="3">
+                    {activeForm === "buyForm" && <BuyingFormContainer />}
+                    {activeForm === "sellForm" && <SellFormContainer />}
+                    {activeForm === "cancelForm" && <CancelForm />}
+                  </td>
+                </tr>
+              );
+            } else {
+              // 일반 tr
+              return (
+                <tr key={item.orderId}>
+                  <td className={cx("td_cell-volume selling_td")}>
+                    {item.orderAmountCommSet}
+                  </td>
+                  <td
+                    className={cx("td_cell-price selling_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
+                    {item.orderPriceCommSet}
+                  </td>
+                  <td
+                    className={cx("td_cell-ratio selling_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
+                    {item.orderRatioCommSet}
+                  </td>
+                </tr>
+              );
+            }
+          })}
           {/* 매수 주문 */}
           {_buyingOrders.map((item, index) => {
             // console.log("*** index: ", index, item);
@@ -255,10 +224,16 @@ const Order = ({
               return (
                 <tr key={item.orderId}>
                   <td className={cx("")} rowSpan="10" />
-                  <td className={cx("td_cell-price buying_td")}>
+                  <td
+                    className={cx("td_cell-price buying_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
                     {item.orderPriceCommSet}
                   </td>
-                  <td className={cx("td_cell-ratio buying_td")}>
+                  <td
+                    className={cx("td_cell-ratio buying_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
                     {item.orderRatioCommSet}
                   </td>
                   <td className={cx("td_cell-volume buying_td left-align")}>
@@ -273,27 +248,20 @@ const Order = ({
                   </td>
                 </tr>
               );
-            } else if (index === 10) {// 마지막 tr
+            } else {
+              // 일반 tr
               return (
                 <tr key={item.orderId}>
-                  <td className={cx("selling-residual-quantity-container ")}>
-                    <span className={cx("text")}>매도잔량</span>
-                    <span className={cx("quantity")}>4.099</span>
-                  </td>
-                  <td colSpan="2" />
-                  <td className={cx("buying-residual-quantity-container ")}>
-                    <span className={cx("text")}>매수잔량</span>
-                    <span className={cx("quantity")}>258.67</span>
-                  </td>
-                </tr>
-              );
-            } else { // 일반 tr
-              return (
-                <tr key={item.orderId}>
-                  <td className={cx("td_cell-price buying_td")}>
+                  <td
+                    className={cx("td_cell-price buying_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
                     {item.orderPriceCommSet}
                   </td>
-                  <td className={cx("td_cell-ratio buying_td")}>
+                  <td
+                    className={cx("td_cell-ratio buying_td")}
+                    onClick={() => handlePriceClick(item.orderPrice)}
+                  >
                     {item.orderRatioCommSet}
                   </td>
                   <td className={cx("td_cell-volume buying_td left-align")}>
@@ -303,75 +271,17 @@ const Order = ({
               );
             }
           })}
-          {/* <tr>
-            <td className={cx("")} rowSpan="10" />
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.148</td>
-            <td
-              className={cx("trade-history-section")}
-              rowSpan="10"
-              colSpan="3"
-            >
-              {/* <TradeHistory /> */}
-          {/*</td>
-          </tr>*/}
-          {/* <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
-          <tr>
-            <td className={cx("td_cell-price buying_td")}>6,052,000</td>
-            <td className={cx("td_cell-ratio buying_td")}>-1.38%</td>
-            <td className={cx("td_cell-volume buying_td left-align")}>0.154</td>
-          </tr>
           <tr>
             <td className={cx("selling-residual-quantity-container ")}>
               <span className={cx("text")}>매도잔량</span>
-              <span className={cx("quantity")}>4.099</span>
+              <span className={cx("quantity")}>{remainingSellAmount}</span>
             </td>
             <td colSpan="2" />
             <td className={cx("buying-residual-quantity-container ")}>
               <span className={cx("text")}>매수잔량</span>
-              <span className={cx("quantity")}>258.67</span>
+              <span className={cx("quantity")}>{remainingBuyAmount}</span>
             </td>
-          </tr> */}
+          </tr>
         </tbody>
       </table>
     </div>

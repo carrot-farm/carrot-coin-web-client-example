@@ -5,15 +5,15 @@ import { inputCommSet } from "lib/tools";
 import { calcTotalPriceResult } from "lib/common";
 
 //action types
-const INITIALIZE = "buyingForm/INITIALIZE";
-const SET_DEFAULT_STATE = "buyingForm/SET_DEFAULT_STATE";
-const SET_VOLUME = "buyingForm/SET_VOLUME";
-const SET_PRICE = "buyingForm/SET_PRICE";
-const SET_CALC_PRICE = "buyingForm/SET_CALC_PRICE";
-const SET_TOTAL_PRICE = "buyingForm/SET_TOTAL_PRICE";
-const TOGGLE_VOLUME_MENU = "buyingForm/TOGGLE_VOLUME_MENU";
-const SET_FORM_VALUES = "buyingForm/SET_FORM_VALUES";
-const SUBMIT_BUY_ORDER = "buyingForm/SUBMIT_BUY_ORDER";
+const INITIALIZE = "sellingForm/INITIALIZE";
+const SET_DEFAULT_STATE = "sellingForm/SET_DEFAULT_STATE";
+const SET_VOLUME = "sellingForm/SET_VOLUME";
+const SET_PRICE = "sellingForm/SET_PRICE";
+const SET_CALC_PRICE = "sellingForm/SET_CALC_PRICE";
+const SET_TOTAL_PRICE = "sellingForm/SET_TOTAL_PRICE";
+const TOGGLE_VOLUME_MENU = "sellingForm/TOGGLE_VOLUME_MENU";
+const SET_FORM_VALUES = "sellingForm/SET_FORM_VALUES";
+const SUBMIT_BUY_ORDER = "sellingForm/SUBMIT_BUY_ORDER";
 
 //action creators
 export const initialize = createAction(INITIALIZE);
@@ -28,12 +28,12 @@ export const submitBuyOrder = createAction(SUBMIT_BUY_ORDER);
 
 //initial state
 const initialState = Map({
-  buyingVolume: 0, // 매수수량
-  buyingVolumeCommset: 0,
-  buyingPrice: 0, // 매수기준가
-  buyingPriceCommset: 0,
-  buyingTotalPrice: 0, // 매수 총액
-  buyingTotalPriceCommset: 0,
+  sellingVolume: 0, // 매수수량
+  sellingVolumeCommset: 0,
+  sellingPrice: 0, // 매수기준가
+  sellingPriceCommset: 0,
+  sellingTotalPrice: 0, // 매수 총액
+  sellingTotalPriceCommset: 0,
   volumeMenuAnchorEl: null // 매수수량 메뉴
 });
 
@@ -57,8 +57,8 @@ const buyingFormActions = handleActions(
         return state;
       }
       return state
-        .set("buyingVolume", result.number)
-        .set("buyingVolumeCommset", result.numberCommSet);
+        .set("sellingVolume", result.number)
+        .set("sellingVolumeCommset", result.numberCommSet);
     },
     // set menu el
     [TOGGLE_VOLUME_MENU]: (state, action) => {
@@ -72,26 +72,25 @@ const buyingFormActions = handleActions(
       }
       const price = inputCommSet(action.payload);
       return state
-        .set("buyingPrice", price.number)
-        .set("buyingPriceCommset", price.numberCommSet);
+        .set("sellingPrice", price.number)
+        .set("sellingPriceCommset", price.numberCommSet);
     },
     // 계산 후 매수 가격 설정
     [SET_CALC_PRICE]: (state, action) => {
-      const { orderPrice, ownPrice } = action.payload;
-      let price = orderPrice;
-      let volume = state.get("buyingVolume");
-      const result = calcTotalPriceResult({ price, volume, ownPrice });
-      const priceResult = inputCommSet(result.price);
-      const volumeResult = inputCommSet(result.volume, 4);
-      const totalPriceResult = inputCommSet(result.totalPrice);
-      // console.log("----> SET_CALC_PRICE: ",result,priceResult,volumeResult,totalPriceResult);
+      let price = action.payload;
+      let volume = state.get("sellingVolume");
+      const totalPrice = price * volume;
+      const priceResult = inputCommSet(price);
+      const volumeResult = inputCommSet(volume, 4);
+      const totalPriceResult = inputCommSet(totalPrice);
+      // console.log( "----> SET_CALC_PRICE: ", priceResult,volumeResult, totalPriceResult);
       return state
-        .set("buyingVolume", volumeResult.number)
-        .set("buyingVolumeCommset", volumeResult.numberCommSet)
-        .set("buyingPrice", priceResult.number)
-        .set("buyingPriceCommset", priceResult.numberCommSet)
-        .set("buyingTotalPrice", totalPriceResult.number)
-        .set("buyingTotalPriceCommset", totalPriceResult.numberCommSet);
+        .set("sellingVolume", volumeResult.number)
+        .set("sellingVolumeCommset", volumeResult.numberCommSet)
+        .set("sellingPrice", priceResult.number)
+        .set("sellingPriceCommset", priceResult.numberCommSet)
+        .set("sellingTotalPrice", totalPriceResult.number)
+        .set("sellingTotalPriceCommset", totalPriceResult.numberCommSet);
     },
     // 매수 총액 셋팅
     [SET_TOTAL_PRICE]: (state, action) => {
@@ -100,8 +99,8 @@ const buyingFormActions = handleActions(
         return state;
       }
       return state
-        .set("buyingTotalPrice", result.number)
-        .set("buyingTotalPriceCommset", result.numberCommSet);
+        .set("sellingTotalPrice", result.number)
+        .set("sellingTotalPriceCommset", result.numberCommSet);
     }
   },
   initialState
