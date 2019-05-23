@@ -3,13 +3,15 @@ import { Map, List } from "immutable";
 
 import dummy from "dummyData/initializeData";
 import {
-  addVolumeList,
+  // addVolumeList,
   convertUserOrdersToOrders,
   buyConclusion,
+  sellConclusion,
   calcTodayPrice,
-  autoDecimalRound
+  autoDecimalRound,
+  setChartData
 } from "lib/common";
-import { decimalRound } from "lib/tools";
+// import { decimalRound } from "lib/tools";
 // import { autoDecimalRound } from "../../lib/common";
 
 const {
@@ -19,7 +21,9 @@ const {
   buyingOrders,
   sellingOrders,
   userBuyingOrders,
-  userSellingOrders
+  userSellingOrders,
+  concludedOrders,
+  chartData
 } = dummy;
 
 // ===== action types
@@ -34,6 +38,8 @@ const SET_MY_COIN = "stock/SET_MY_COIN";
 const SUBMIT_BUYING_ORDER = "stock/SUBMIT_BUYING_ORDER";
 const SUBMIT_SELLING_ORDER = "stock/SUBMIT_SELLING_ORDER";
 const UPDATE_ORDERS = "stock/UPDATE_ORDERS";
+const CANCEL_ORDER = "stock/CANCEL_ORDER";
+const SET_DUMY_DATA = "stock/SET_DUMY_DATA";
 
 // ===== action creators
 export const setSearchValue = createAction(SET_SERACH_VALUE);
@@ -47,6 +53,8 @@ export const setMyCoin = createAction(SET_MY_COIN);
 export const submitBuyingOrder = createAction(SUBMIT_BUYING_ORDER);
 export const submitSellingOrder = createAction(SUBMIT_SELLING_ORDER);
 export const updateOrders = createAction(UPDATE_ORDERS);
+export const cancelOrder = createAction(CANCEL_ORDER);
+export const setDumyData = createAction(SET_DUMY_DATA);
 
 // ===== initial state
 const initialState = Map({
@@ -64,12 +72,14 @@ const initialState = Map({
     lockedAmount: 0
   }), // 현재 선택된 코인에 대한 나의 소유 코인 정보
   activeForm: "buyForm", // 활성화 폼 지정(buyForm/sellForm/cancelForm)
-  buyingOrders: List(buyingOrders), // 매수 주문
-  sellingOrders: List(sellingOrders), // 매도 주문
+  buyingOrders: buyingOrders, // 매수 주문
+  sellingOrders: sellingOrders, // 매도 주문
   userBuyingOrders: userBuyingOrders, // 유저 구매 주문
   userSellingOrders: userSellingOrders, // 유저 판매 주문
   dummyUserOrdersId: 3, // userOrder 시 더미 id
-  dumyConcludedId: 0 // 체결 아이디
+  dumyConcludedId: 5, // 체결 primary key
+  concludedOrders: concludedOrders, // 체결 정보
+  chartData: chartData // 차트 데이터
 });
 
 export default handleActions(
@@ -153,13 +163,15 @@ export default handleActions(
     [SUBMIT_BUYING_ORDER]: (state, action) => {
       const { orderVolume, orderPrice } = action.payload;
       let selectedCoin = state.get("selectedCoin");
-      const { coinId, remainingBuyAmount } = selectedCoin.toJS();
+      const { coinId } = selectedCoin.toJS();
       const myInfo = state.get("myInfo").toJS();
       const orderId = state.get("dummyUserOrdersId") + 1;
       const now = new Date().getTime();
       const orderToltalPrice = parseInt(orderVolume * orderPrice, 10);
       const userBuyingOrders = state.get("userBuyingOrders");
       const userSellingOrders = state.get("userSellingOrders");
+      let chartData = state.get("chartData");
+      let ownCoins = state.get("ownCoins");
       let orderData = {
         orderType: "buy",
         orderId: orderId,
@@ -182,7 +194,7 @@ export default handleActions(
         state.get("dumyConcludedId")
       );
       const { remainingTotalPrice, buyedTotalAmount } = conclusionInfo;
-      console.log("> concludedInfo: ", conclusionInfo);
+      // console.log("> concludedInfo: ", conclusionInfo);
 
       // orders volume
       const buyingVolumeList = convertUserOrdersToOrders(
@@ -206,6 +218,27 @@ export default handleActions(
       myInfo.ownPrice -= orderToltalPrice;
       // console.log("> lockedprice: ", myInfo.lockedPrice, myInfo.ownPrice);
 
+      // 소유 코인 업데이트
+      if (conclusionInfo.buyedTotalAmount > 0) {
+        const coinIndex = ownCoins.findIndex(
+          item => item.get("coinId") === coinId
+        );
+        const ownCoinAmount = ownCoins.getIn([coinIndex, "ownAmount"]);
+        const ownCoinLockedAmount = ownCoins.getIn([coinIndex, "lockedAmount"]);
+        ownCoins = ownCoins
+          .setIn(
+            [coinIndex, "ownAmount"],
+            ownCoinAmount + conclusionInfo.buyedTotalAmount
+          )
+          .setIn(
+            [coinIndex, "lockedAmount"],
+            ownCoinLockedAmount - conclusionInfo.buyedTotalAmount < 0
+              ? 0
+              : ownCoinLockedAmount - conclusionInfo.buyedTotalAmount
+          );
+        // console.log(coinIndex, ownCoinAmount, ownCoinLockedAmount);
+      }
+
       // 금일 현재가/고가/저가/총거래량/총거래금액/매수.매도 잔여량 계산
       const todayTradeInfo = calcTodayPrice({
         coins: state.get("coins"),
@@ -218,101 +251,165 @@ export default handleActions(
         buyedTotalAmount: conclusionInfo.buyedTotalAmount,
         remainingBuyAmount: conclusionInfo.remainingAmount
       });
-      // console.log("> coinsInfo: ", todayTradeInfo);
+
+      // 체결 정보 합치기
+      const concludedHistory = state
+        .get("concludedOrders")
+        .concat(conclusionInfo.concludedOrders);
+      // console.log(
+      //   "> concludedHistory: ",
+      //   conclusionInfo.concludedOrders.toJS(),
+      //   concludedHistory.toJS()
+      // );
+
+      // 체결이 됐을 경우
+      if (
+        conclusionInfo.topConcludedOrderPrice !== undefined &&
+        conclusionInfo.lowConcludedOrderPrice !== undefined
+      ) {
+        chartData = setChartData({
+          chartData,
+          coinId,
+          topPrice: conclusionInfo.topConcludedOrderPrice,
+          currentPrice: conclusionInfo.topConcludedOrderPrice,
+          lowPrice: conclusionInfo.lowConcludedOrderPrice,
+          concludedTime: now
+        });
+        // console.log("> chartData: ", chartData.toJS());
+      }
 
       return state
         .set("userBuyingOrders", conclusionInfo.userBuyingOrders)
         .set("userSellingOrders", conclusionInfo.userSellingOrders)
-        .set("dummyUserOrdersId", orderId)
+        .set("dummyUserOrdersId", conclusionInfo.dumyConcludedId)
         .set("buyingOrders", List(buyingVolumeList))
         .set("sellingOrders", List(sellingVolumeList))
         .set("myInfo", Map(myInfo))
         .set("coins", todayTradeInfo.coins)
-        .set("selectedCoin", todayTradeInfo.selectedCoin);
+        .set("selectedCoin", todayTradeInfo.selectedCoin)
+        .set("concludedOrders", concludedHistory)
+        .set("chartData", chartData)
+        .set("ownCoins", ownCoins);
     },
 
-    // eslint-disable-next-line flowtype/require-valid-file-annotation
-    /* ===== 매도 주문
-     */
+    // ===== 매도 주문
     [SUBMIT_SELLING_ORDER]: (state, action) => {
       const { orderVolume, orderPrice } = action.payload;
       let selectedCoin = state.get("selectedCoin");
-      const { coinId, remainingSellAmount } = selectedCoin.toJS();
-      let selectedMyCoin = state.get("selectedMyCoin").toJS();
-      const ownCoins = state.get("ownCoins");
+      const { coinId } = selectedCoin.toJS();
+      let ownCoins = state.get("ownCoins");
       const myInfo = state.get("myInfo").toJS();
       const orderId = state.get("dummyUserOrdersId") + 1;
       const now = new Date().getTime();
-      const addRemainingSellAmount = remainingSellAmount + orderVolume; // 매도 잔량
+      let userBuyingOrders = state.get("userBuyingOrders");
+      let userSellingOrders = state.get("userSellingOrders");
+      let chartData = state.get("chartData");
       const orderData = {
         orderType: "sell",
         orderid: orderId,
         coinId: coinId,
         ordererId: myInfo.userId,
         orderAmount: orderVolume,
+        currentAmount: orderVolume,
         concludedAmount: 0,
         orderPrice: orderPrice,
         isConclusion: false,
         orderTime: now
       };
       // console.log("---> SUBMIT_SELLING_ORDER", orderData);
-      // push order list
-      const newUserOrders = state.get("userSellingOrders").push(Map(orderData));
-      // console.log("> push order list: ", newUserOrders.toJS());
 
-      // addVolume
-      const addedVolumeList = addVolumeList(state.get("sellingOrders").toJS(), {
-        coinId,
-        orderPrice,
-        orderAmount: orderVolume
-      });
-      // console.log("> addedVolumeList: ", addedVolumeList);
-
-      // 소유 코인 수량 변경 치 locackAmout 추가
-      const lockedAmount = orderVolume;
-      selectedMyCoin.ownAmount = selectedMyCoin.ownAmount - lockedAmount;
-      if (!Number.isInteger(selectedMyCoin.ownAmount)) {
-        selectedMyCoin.ownAmount = parseFloat(
-          decimalRound(selectedMyCoin.ownAmount, 3)
-        );
-      }
-      // const lockedPrice = parseInt(orderVolume * orderPrice, 10);
-      // myInfo.lockedPrice += lockedPrice;
-      // myInfo.ownPrice -= lockedPrice;
-      // console.log("> selectedMyCoin: ", selectedMyCoin);
-
-      // 보유 코인 리스트 lockedAmount,
-      const changedOwnCoins = ownCoins.map(item => {
-        if (item.get("coinId") === coinId) {
-          return (item = Map(selectedMyCoin));
-        }
-        // console.log(item.toJS());
-      });
-      // console.log("> changedOwnCoins: ", changedOwnCoins.toJS());
-
-      // 선택된 코인 매도 잔량 업데이트
-      const _selectedCoin = {
-        ...selectedCoin.toJS(),
-        remainingSellAmount: !Number.isInteger(addRemainingSellAmount)
-          ? parseFloat(decimalRound(addRemainingSellAmount, 3))
-          : addRemainingSellAmount
-      };
+      // 체결 처리.
+      const conclusionInfo = sellConclusion(
+        userBuyingOrders,
+        userSellingOrders,
+        orderData,
+        state.get("dumyConcludedId")
+      );
+      const { selledTotalPrice } = conclusionInfo;
       // console.log(
-      //   "> _selectedCoin: ",
-      //   // remainingBuyAmount,
-      //   // orderVolume,
-      //   addRemainingBuyAmount,
-      //   _selectedCoin
+      //   "> concludedInfo: ",
+      //   conclusionInfo
+      //   // conclusionInfo.userBuyingOrders.toJS(),
+      //   // conclusionInfo.userSellingOrders.toJS()
       // );
 
-      // console.log("> myInfo: ", myInfo);
+      // orders volume
+      const buyingVolumeList = convertUserOrdersToOrders(
+        conclusionInfo.userBuyingOrders.toJS()
+      );
+      const sellingVolumeList = convertUserOrdersToOrders(
+        conclusionInfo.userSellingOrders.toJS()
+      );
+      // console.log("> orderVolume: ", conclusionInfo.userSellingOrders.toJS());
+
+      // 소유 코인 업데이트
+      const ownCoinIndex = ownCoins.findIndex(
+        item => item.get("coinId") === coinId
+      );
+      const ownCoinInfoJS = ownCoins.get(ownCoinIndex).toJS();
+      const ownCoinCalcAmount = autoDecimalRound(
+        ownCoinInfoJS.ownAmount - orderVolume
+      );
+
+      // 소유 금액 더하기
+      myInfo.ownPrice += selledTotalPrice;
+
+      // 금일 현재가/고가/저가/총거래량/총거래금액/매수.매도 잔여량 계산
+      const todayTradeInfo = calcTodayPrice({
+        coins: state.get("coins"),
+        selectedCoin: selectedCoin,
+        currentPrice: conclusionInfo.topConcludedOrderPrice,
+        topPrice: conclusionInfo.topConcludedOrderPrice,
+        lowPrice: conclusionInfo.lowConcludedOrderPrice,
+        tradeVolume: conclusionInfo.selledTotalAmount,
+        tradePrice: conclusionInfo.selledTotalPrice,
+        selledTotalAmount: conclusionInfo.selledTotalAmount,
+        remainingSellAmount: conclusionInfo.remainingAmount
+      });
+      // console.log(
+      //   "> sell calcTodayPrice: ",
+      //   todayTradeInfo.coins.toJS(),
+      //   todayTradeInfo.selectedCoin
+      // );
+
+      // 체결 정보 합치기
+      const concludedHistory = state
+        .get("concludedOrders")
+        .concat(conclusionInfo.concludedOrders);
+
+      // 체결이 됐을 경우
+      if (
+        conclusionInfo.topConcludedOrderPrice !== undefined &&
+        conclusionInfo.lowConcludedOrderPrice !== undefined
+      ) {
+        chartData = setChartData({
+          chartData,
+          coinId,
+          topPrice: conclusionInfo.topConcludedOrderPrice,
+          currentPrice: conclusionInfo.topConcludedOrderPrice,
+          lowPrice: conclusionInfo.lowConcludedOrderPrice,
+          concludedTime: now
+        });
+        // console.log("> chartData: ", chartData.toJS());
+      }
+
+      // state 셋팅
       return state
-        .set("userSellingOrders", newUserOrders)
-        .set("dummyUserOrdersId", orderId)
-        .set("sellingOrders", List(addedVolumeList))
-        .set("selectedCoin", Map(_selectedCoin))
-        .set("selectedMyCoin", Map(selectedMyCoin))
-        .set("ownCoins", changedOwnCoins);
+        .set("userBuyingOrders", conclusionInfo.userBuyingOrders)
+        .set("userSellingOrders", conclusionInfo.userSellingOrders)
+        .set("dummyUserOrdersId", conclusionInfo.dumyConcludedId)
+        .set("buyingOrders", List(buyingVolumeList))
+        .set("sellingOrders", List(sellingVolumeList))
+        .set("myInfo", Map(myInfo))
+        .set("coins", todayTradeInfo.coins)
+        .setIn(["ownCoins", ownCoinIndex, "ownAmount"], ownCoinCalcAmount)
+        .setIn(
+          ["ownCoins", ownCoinIndex, "lockedAmount"],
+          conclusionInfo.remainingAmount
+        )
+        .set("selectedCoin", todayTradeInfo.selectedCoin)
+        .set("concludedOrders", concludedHistory)
+        .set("chartData", chartData);
     },
 
     // ===== userOrders를 volume orders로 컨버트
@@ -327,6 +424,182 @@ export default handleActions(
       return state
         .set("buyingOrders", List(buyingOrders))
         .set("sellingOrders", List(sellingOrders));
+    },
+
+    // ===== 취소 주문
+    [CANCEL_ORDER]: (state, action) => {
+      const { orderId, orderType } = action.payload;
+
+      const userOrdersName =
+        orderType === "buy" ? "userBuyingOrders" : "userSellingOrders";
+      const userOrders = state.get(userOrdersName);
+      const orderIndex = userOrders.findIndex(
+        item => item.get("orderId") === orderId
+      );
+      const userOrderJS = userOrders.get(orderIndex).toJS(); // 취소할 주문 정보
+      const volumeOrdersName =
+        orderType === "buy" ? "buyingOrders" : "sellingOrders";
+      // volumeList의 coinIndex
+      let volumeCoinIndex = state
+        .get(volumeOrdersName)
+        .findIndex(item => item.coinId === userOrderJS.coinId);
+      let volumeOrdersJS = state.get(volumeOrdersName).toJS();
+      let volumeOrderIndex; // volume orders의 인덱스
+      const myInfoJS = state.get("myInfo").toJS();
+      const ownCoins = state.get("ownCoins");
+      const ownCoinIndex = ownCoins.findIndex(
+        item => item.get("coinId") === userOrderJS.coinId
+      );
+      let ownCoinAmount = ownCoins.getIn([ownCoinIndex, "ownAmount"]);
+      let ownCoinlockedAmount = ownCoins.getIn([ownCoinIndex, "lockedAmount"]);
+
+      if (orderType === "buy") {
+      } else if (orderType === "sell") {
+      }
+
+      // modify volume order
+      volumeOrdersJS[volumeCoinIndex].orders.map((item, index) => {
+        if (item.orderPrice === userOrderJS.orderPrice) {
+          volumeOrderIndex = index;
+          item.orderAmount -= userOrderJS.currentAmount;
+        }
+        return item;
+      });
+
+      // 수량이 0개 이하인 volume은 삭제한다.
+      if (
+        volumeOrdersJS[volumeCoinIndex].orders[volumeOrderIndex].orderAmount <=
+        0
+      ) {
+        volumeOrdersJS[volumeCoinIndex].orders.splice(volumeOrderIndex, 1);
+      }
+
+      // 매수 취소시
+      if (orderType === "buy") {
+        // 주문되어 있던 현금 추가
+        const lockedPrice = userOrderJS.currentAmount * userOrderJS.orderPrice;
+        myInfoJS.ownPrice += parseInt(lockedPrice, 10);
+        myInfoJS.lockedPrice -= parseInt(lockedPrice, 10);
+      } else {
+        // 주문걸려 있던 코인 수량 추가
+        ownCoinAmount = autoDecimalRound(
+          ownCoinAmount + userOrderJS.currentAmount
+        );
+        ownCoinlockedAmount = autoDecimalRound(
+          ownCoinlockedAmount - userOrderJS.currentAmount
+        );
+      }
+
+      // console.log(
+      //   "---> orderCancel: ",
+      //   orderId,
+      //   orderType,
+      //   // volumeOrdersName,
+      //   // volumeOrderIndex,
+      //   userOrderJS,
+      //   myInfoJS
+      //   // volumeOrdersJS,
+      //   // ownCoinIndex,
+      //   // ownCoinAmount,
+      //   // ownCoinlockedAmount
+      // );
+      return state
+        .setIn([userOrdersName, orderIndex, "isCancel"], true)
+        .set(volumeOrdersName, List(volumeOrdersJS))
+        .set("myInfo", Map(myInfoJS))
+        .setIn(["ownCoins", ownCoinIndex, "ownAmount"], ownCoinAmount)
+        .setIn(["ownCoins", ownCoinIndex, "lockedAmount"], ownCoinlockedAmount);
+    },
+
+    // ===== 더미 데이터
+    [SET_DUMY_DATA]: (state, action) => {
+      const coinsJS = state.get("coins").toJS();
+      let userBuyingOrders = state.get("userBuyingOrders");
+      let userSellingOrders = state.get("userSellingOrders");
+      // let chartData = state.get("chartData");
+      const btcInfo = coinsJS[0];
+      const bchInfo = coinsJS[1];
+      let buyOrderPrice;
+      let sellOrderPrice;
+      let setCoinId;
+      // const timestamp = new Date().getTime() - 1000 * 60 * 40;
+      // let concludedTime;
+      // let btcChartOpenPrice;
+      // let btcChartTopPrice;
+      // let btcChartLowPrice;
+      // let btcChartClosePrice;
+
+      // 매수 데이터 셋팅
+      for (let i = 0; i < 40; i++) {
+        if (i <= 19) {
+          setCoinId = 0;
+          buyOrderPrice =
+            btcInfo.currentPrice -
+            i * btcInfo.tickPrice -
+            (i === 0 && btcInfo.tickPrice);
+          sellOrderPrice = btcInfo.currentPrice + i * btcInfo.tickPrice;
+        } else {
+          setCoinId = 1;
+          buyOrderPrice =
+            bchInfo.currentPrice -
+            i * bchInfo.tickPrice -
+            (i === 0 && bchInfo.tickPrice);
+          sellOrderPrice = bchInfo.currentPrice + i * bchInfo.tickPrice;
+        }
+        userBuyingOrders = userBuyingOrders.push(
+          Map({
+            orderId: "ubo" + i, // 주문 번호
+            coinId: setCoinId,
+            orderType: "buy",
+            ordererId: 0, // 주문자 id
+            orderAmount: 2, // 주문량
+            currentAmount: 2, // 현재 주문량
+            concludedAmount: 0, // 체결된 주문량
+            orderPrice: buyOrderPrice, // 주문 가격
+            isConclusion: false, // 체결 완료
+            isCancel: false, // 주문 취소
+            orderTime: 1 // 주문 시간
+          })
+        );
+        userSellingOrders = userSellingOrders.push(
+          Map({
+            orderId: "uso" + i, // 주문 번호
+            coinId: setCoinId,
+            orderType: "sell",
+            ordererId: 0, // 주문자 id
+            orderAmount: 2, // 주문량
+            currentAmount: 2, // 현재 주문량
+            concludedAmount: 0, // 체결된 주문량
+            orderPrice: sellOrderPrice, // 주문 가격
+            isConclusion: false, // 체결 완료
+            isCancel: false, // 주문 취소
+            orderTime: 1 // 주문 시간
+          })
+        );
+
+        // concludedTime = timestamp + i * 1000 * 60;
+
+        // chartData = chartData.setIn(
+        //   [0, "data", i],
+        //   Map({
+        //     concludedTime: concludedTime,
+        //     x: new Date(concludedTime),
+        //     y: [
+        //       btcInfo.currentPrice,
+        //       btcInfo.currentPrice,
+        //       btcInfo.currentPrice,
+        //       btcInfo.currentPrice
+        //     ]
+        //   })
+        // );
+      }
+
+      // console.log(chartData.toJS());
+
+      return state
+        .set("userBuyingOrders", userBuyingOrders)
+        .set("userSellingOrders", userSellingOrders);
+      // .set("chartData", chartData);
     }
   },
   initialState

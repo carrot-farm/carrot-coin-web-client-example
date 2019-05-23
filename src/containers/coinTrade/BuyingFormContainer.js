@@ -97,7 +97,7 @@ class BuyingFormContainer extends Component {
     const { number } = inputCommSet(value);
     if (number < tickPrice) {
     }
-    const cutValue = Math.floor(number / tickPrice) * tickPrice;
+    const cutValue = parseInt(Math.floor(number / tickPrice) * tickPrice, 10);
 
     this.buyingPriceChange({
       sendData: {
@@ -111,7 +111,7 @@ class BuyingFormContainer extends Component {
   handleUpperTickClick = () => {
     const { selectedCoin, buyingPrice } = this.props;
     const { tickPrice } = selectedCoin.toJS();
-    const changePrice = buyingPrice + tickPrice;
+    const changePrice = parseInt(buyingPrice + tickPrice, 10);
     this.buyingPriceChange({
       sendData: {
         number: changePrice,
@@ -124,7 +124,7 @@ class BuyingFormContainer extends Component {
   handleLowerTickClick = () => {
     const { selectedCoin, buyingPrice } = this.props;
     const { tickPrice } = selectedCoin.toJS();
-    const changePrice = buyingPrice - tickPrice;
+    const changePrice = parseInt(buyingPrice - tickPrice, 10);
     if (changePrice < 0) {
       return false;
     }

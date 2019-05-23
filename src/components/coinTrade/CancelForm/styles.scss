@@ -1,60 +1,60 @@
-.buying-form-root {
-  .current-price-container {
-    margin-bottom: 2rem;
+.cancel-form-root {
+  font-size: 0.9rem;
+  max-height: 445px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  .list-header,
+  ul {
+    display: flex;
   }
-  .buying-form {
-    dl {
-      margin-bottom: 0.8rem;
-      .input-container {
-        border: 1px solid #dddddd;
+  // 헤더
+  .list-header {
+    box-sizing: border-box;
+    border-bottom: 1px solid #d5d5d5;
+  }
+  .list-header > div {
+    // text-align: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+  }
+  // 리스트
+  ul {
+    flex-direction: column;
+    li {
+      display: flex;
+      flex-direction: row;
+      transition: all 0.3s linear;
+      div {
+        padding: 10px 0;
         box-sizing: border-box;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        .input-column {
-          width: 153px;
-          padding: 0 10px;
-          input {
-            width: 120px;
-          }
-        }
-        .buttons-column {
-          border-left: 1px solid #dddddd;
-          box-sizing: border-box;
-          width: 74px;
-          button {
-            height: 34px;
-            background: #e5e5e5;
-            transition: all 0.3s linear;
-            &:hover {
-              background: #f5f5f5;
-            }
-          }
-          .upper-price-button {
-            border-left: 1px solid #dddddd;
-            box-sizing: border-box;
-          }
-        }
-        &.buying-total-price-container {
-          width: 249px;
-          justify-content: flex-end;
-          padding-right: 1rem;
+        &.col-amount {
+          font-size: 0.8rem;
         }
       }
-      .description-container {
-        line-height: 0.8rem;
-        font-size: 0.5rem;
-        justify-content: flex-start;
+      &:hover {
+        background-color: #f5f5f5;
       }
     }
-    dl:last-child {
-      margin-bottom: none;
-    }
-    .order-button-container {
-      margin-top: 148px;
-      .order-submit-button {
-        padding: 1.2rem;
-      }
+  }
+  .col-type {
+    width: 50px;
+    text-align: center;
+  }
+  .col-price {
+    width: 40%;
+    text-align: right;
+  }
+  .col-amount {
+    width: 26%;
+    text-align: right;
+  }
+  .col-button {
+    width: 20%;
+    text-align: center;
+    button {
+      font-size: 0.8rem;
+      color: #777777;
+      padding: 5px;
     }
   }
 }

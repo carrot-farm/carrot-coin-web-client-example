@@ -5,26 +5,38 @@ import styles from "./styles.scss";
 
 const cx = classNames.bind(styles);
 
-const TradeHistory = () => {
+const TradeHistory = ({ ordersHistory }) => {
   return (
     <div className={cx("trade-history-root ")}>
       <div className={cx("title bold s12")}>
         <b>전체 체결</b>
       </div>
-      <table className={cx("trade-history")}>
-        <tr>
-          <th>체결시간</th>
-          <th>체결가격</th>
-          <th>체결량</th>
-          <th>체결금액</th>
-        </tr>
-        <tr>
-          <td>20:00</td>
-          <td>6,248,000</td>
-          <td>0.0448</td>
-          <td>281,523</td>
-        </tr>
-      </table>
+      <div className={cx("trade-history-header")}>
+        <div className={cx("col-concluded-time")}>체결시간</div>
+        <div className={cx("col-concluded-total-price")}>체결가격</div>
+        <div className={cx("col-concluded-amount")}>체결량</div>
+        <div className={cx("col-concluded-price")}>체결금액</div>
+      </div>
+      <ul className={cx("trade-history")}>
+        {ordersHistory.map(item => {
+          return (
+            <li key={item.concludedId}>
+              <div className={cx("col-concluded-time")}>
+                {item.concludedTimeStr}
+              </div>
+              <div className={cx("col-concluded-total-price")}>
+                {item.totalPriceCommset}
+              </div>
+              <div className={cx("col-concluded-amount")}>
+                {item.concludedAmountCommSet}
+              </div>
+              <div className={cx("col-concluded-price")}>
+                {item.orderPriceCommSet}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 };

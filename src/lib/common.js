@@ -81,8 +81,8 @@ export const sortOrders = (
   orders,
   _selectedCoin,
   orderDirection = true, // true: asc, false: desc // 가격을 기준으로 정렬
-  // isConclusion = false, // 체결 완료
-  sortReverse = false // 역 정렬 10개.
+  sortReverse = false, // 역 정렬 10개.
+  allEmptyData = false // 빈 객체로 전체를 체운다.
 ) => {
   let selectedCoinIndex = 0;
   const _selectedCoinId = _selectedCoin.coinId;
@@ -96,7 +96,7 @@ export const sortOrders = (
   // 정렬, 역정렬 함수.
   const sortFn = (i, _sortReverse) => {
     m = _sortReverse ? k - i : i;
-    if (sortedOrders[m]) {
+    if (allEmptyData === false && sortedOrders[m]) {
       commSetOrders[i] = {
         ...sortedOrders[m],
         orderAmountCommSet: commSet(sortedOrders[m].orderAmount, true),
@@ -122,24 +122,27 @@ export const sortOrders = (
   //   orders,
   //   _selectedCoinId,
   //   orderDirection,
-  //   isConclusion
+  //   _selectedCoin
   // );
-  // order 배열이 작을 경우 내보내기
-  if (orders.length < 1) {
-    return orders;
+  // order 배열이 클경우.
+  if (orders.length > 0) {
+    // return orders;
+    // order index 찾기.
+    selectedCoinIndex = orders.findIndex(item => {
+      return item.coinId === _selectedCoinId;
+    });
+    // console.log("> selectedCoinIndex: ", selectedCoinIndex);
+    // console.log("> sortedOrders: ", orders[selectedCoinIndex]);
+    if (selectedCoinIndex >= 0) {
+      // 매수 order 가져오기.
+      sortedOrders = orders[selectedCoinIndex].orders;
+      // console.log("> findOrders: ", sortedOrders);
+
+      // order 정렬
+      sortedOrders = jsonSort(sortedOrders, "orderPrice", orderDirection);
+    }
   }
 
-  // order index 찾기.
-  selectedCoinIndex = orders.findIndex(item => {
-    return item.coinId === _selectedCoinId;
-  });
-  // console.log("> selectedCoinIndex: ", selectedCoinIndex);
-  // 매수 order 가져오기.
-  sortedOrders = orders[selectedCoinIndex].orders;
-  // console.log("> findOrders: ", sortedOrders);
-
-  // order 정렬
-  sortedOrders = jsonSort(sortedOrders, "orderPrice", orderDirection);
   // console.log("> sorted: ", sortedOrders);
   for (; i < 10; i++) {
     sortFn(i, sortReverse);
@@ -269,6 +272,7 @@ export const autoDecimalRound = (num, digits = 4) => {
     buyedTotalPrice(int): 매수 총액
     topConcludedOrderPrice(int): 고가 체결 금액(고가/저가 표시에 사용.)
     lowConcludedOrderPrice(int): 저가 체결 금액(고가/저가 표시에 사용.)
+    dumyConcludedId(int): 체결 리스트 id(임시 사용)
 */
 export const buyConclusion = (
   userBuyingOrders,
@@ -291,11 +295,11 @@ export const buyConclusion = (
   let topConcludedOrderPrice;
   let lowConcludedOrderPrice;
 
-  // 가격순 오름차순 정렬
+  // 가격 오름차순 정렬
   userSellingOrdersJS = jsonSort(userSellingOrdersJS, "orderPrice");
   // console.log("> sort userSellingOrders: ", userSellingOrdersJS);
-  // userSellingOrders 의 내용 수정 / concludedOrders 에 체결 내역 추가.
-  // 주문 총액누적 감소 / 유저주문 수량감소 / 체결량 증가 / isConclusion
+
+  // 체결
   userSellingOrdersJS = userSellingOrdersJS.map((_item, index) => {
     let item = { ..._item };
     // console.log("> conclusion : ", item.orderPrice, item.orderAmount);
@@ -317,7 +321,12 @@ export const buyConclusion = (
       // console.log("> buyAmount : ", item.orderPrice, buyAmount);
       // 매수 후 잔여량.
       remainingAmount = autoDecimalRound(item.currentAmount - buyAmount);
-      // console.log("> remainingAmount : ", remainingAmount);
+      // console.log(
+      //   "> remainingAmount : ",
+      //   // item.currentAmount,
+      //   // buyAmount,
+      //   remainingAmount
+      // );
       // 체결량
       concludedAmount = remainingAmount < 0 ? item.currentAmount : buyAmount;
       // 잔여량이 마이너스 일 경우 양수 전환
@@ -349,7 +358,8 @@ export const buyConclusion = (
         concludedIndex[k++] = index;
         concludedOrders = concludedOrders.push(
           Map({
-            concludedId: ++dumyConcludedId,
+            concludedId: "c" + concludedTime + index,
+            coinId: coinId,
             buyOrderId: orderId,
             buyerId: ordererId,
             sellOrderId: item.orderId,
@@ -405,7 +415,9 @@ export const buyConclusion = (
   userBuyingOrders = userBuyingOrders.push(
     Map({
       ...orderData,
+      orderId: "b" + new Date().getTime(),
       isConclusion: buyCurrentAmount > 0 ? false : true,
+      isCancel: false,
       currentAmount: buyCurrentAmount,
       concludedAmount: buyConcludedAmount
     })
@@ -420,6 +432,179 @@ export const buyConclusion = (
     remainingAmount,
     buyedTotalAmount,
     buyedTotalPrice,
+    topConcludedOrderPrice,
+    lowConcludedOrderPrice,
+    dumyConcludedId
+  };
+};
+/*
+  ===== 매도 체결
+  @params
+    userBuyingOrders(immList): 유저 매수 리스트
+    userSellingOrders(immList): 유저 매도 리스트
+    orderData(obj): 매수 주문 데이터
+    dumyConcludedId(int): 체결 리스트 id(임시 사용)
+  @return
+    userSellingOrders(immList): 체결/일부체결/미체결이 반영된 판매 정보.
+    userBuyingOrders(immList): 체결 정보가 반영된 list,
+    concludedOrders(immList): 체결된 정보들.
+    remainingTotalPrice(int): 체결 후 남은 잔여 매수액
+    remainingAmount(float): 체결 후 남은 잔여 매수량
+    selledTotalAmount(float): 매도 총량(myInfo 총량 업데이트)
+    selledTotalPrice(int): 매도 총액
+    topConcludedOrderPrice(int): 고가 체결 금액(고가/저가 표시에 사용.)
+    lowConcludedOrderPrice(int): 저가 체결 금액(고가/저가 표시에 사용.)
+    dumyConcludedId(int): 체결 리스트 id(임시 사용)
+*/
+export const sellConclusion = (
+  userBuyingOrders,
+  userSellingOrders,
+  orderData,
+  dumyConcludedId
+) => {
+  const { coinId, orderId, ordererId, orderPrice, orderAmount } = orderData;
+  let userBuyingOrdersJS = userBuyingOrders.toJS();
+  // let remainingTotalPrice = autoDecimalRound(orderAmount * orderPrice); // 깍여나갈 잔여 계산액.
+  let remainingAmount = orderAmount; // 잔여 매수량
+  let selledTotalAmount = 0; // 총 매수 량
+  let selledTotalPrice = 0; // 총 매수 량
+  let concludedOrders = List([]);
+  let concludedTime = new Date().getTime(); //  체결시간
+  let isConclusion;
+  let concludedIndex = []; // 체결된 인덱스
+  let k = 0;
+  let topConcludedOrderPrice;
+  let lowConcludedOrderPrice;
+
+  // 가격 오름차순 정렬
+  userBuyingOrdersJS = jsonSort(userBuyingOrdersJS, "orderPrice", false);
+  // console.log("> sort userSellingOrders: ", userBuyingOrdersJS);
+
+  // 체결 처리
+  userBuyingOrdersJS = userBuyingOrdersJS.map((item, index) => {
+    // console.log("> conclusion : ", item.orderPrice, item.orderAmount);
+    if (
+      remainingAmount > 0 &&
+      item.orderType === "buy" &&
+      item.coinId === coinId &&
+      item.currentAmount > 0 &&
+      // item.isConclusion === false &&
+      item.orderPrice >= orderPrice
+    ) {
+      // console.log("> for : ", item.orderPrice);
+      let concludedAmount = 0;
+      let currentAmount = item.currentAmount;
+      // 현재 금액으로 주문 가능 총량
+      // buyAmount = remainingAmount;
+      // // console.log("> buyAmount : ", item.orderPrice, buyAmount);
+      // 체결량
+      concludedAmount =
+        remainingAmount >= item.currentAmount
+          ? item.currentAmount
+          : remainingAmount;
+      // 매수 후 잔여량.
+      remainingAmount = autoDecimalRound(remainingAmount - item.currentAmount);
+      // console.log("> remainingAmount : ", remainingAmount, item.currentAmount);
+      // 잔여량이 마이너스 일 경우 양수 전환
+      if (remainingAmount < 0) {
+        remainingAmount = Math.abs(remainingAmount);
+      }
+      // item 의 현재 남은 양
+      currentAmount = autoDecimalRound(item.currentAmount - concludedAmount);
+      // console.log(
+      //   "> currentAmount: ",
+      //   item.orderPrice,
+      //   item.orderAmount,
+      //   concludedAmount,
+      //   remainingAmount,
+      //   currentAmount
+      // );
+      // // 완전 체결 시
+      isConclusion = currentAmount <= 0 ? true : false; // 주문이 전체 체결 됐나 확인.
+
+      // 체결되었을 때.
+      if (concludedAmount > 0) {
+        // 총 매수액
+        selledTotalPrice += parseInt(item.orderPrice * concludedAmount, 10);
+        // 총 매수량
+        selledTotalAmount = autoDecimalRound(
+          selledTotalAmount + concludedAmount
+        );
+        // concludedOrders push
+        concludedIndex[k++] = index;
+        concludedOrders = concludedOrders.push(
+          Map({
+            concludedId: "c" + concludedTime + index,
+            coinId: coinId,
+            buyOrderId: item.orderId,
+            buyerId: item.ordererId,
+            sellOrderId: orderId,
+            sellerId: ordererId,
+            orderPrice: item.orderPrice,
+            concludedAmount,
+            concludedTime
+          })
+        );
+
+        // 고가
+        topConcludedOrderPrice =
+          !topConcludedOrderPrice || topConcludedOrderPrice < item.orderPrice
+            ? item.orderPrice
+            : topConcludedOrderPrice;
+
+        // 저가
+        lowConcludedOrderPrice =
+          !lowConcludedOrderPrice || lowConcludedOrderPrice > item.orderPrice
+            ? item.orderPrice
+            : lowConcludedOrderPrice;
+      }
+
+      // 주문 정보 업데이트
+      item = {
+        ...item,
+        currentAmount,
+        concludedAmount,
+        isConclusion,
+        concludedTime
+      };
+    }
+    return Map(item);
+  });
+  // console.log("> userSellingOrders: ", userBuyingOrdersJS);
+
+  // 매도 주문 체결량
+  const sellConcludedAmount =
+    remainingAmount > 0
+      ? autoDecimalRound(orderAmount - remainingAmount)
+      : orderAmount;
+  // console.log(
+  //   "> sellConcludedAmount: ",
+  //   sellConcludedAmount,
+  //   orderAmount,
+  //   remainingAmount
+  // );
+
+  // userBuyingOrders에 push
+  userSellingOrders = userSellingOrders.push(
+    Map({
+      ...orderData,
+      orderId: "s" + new Date().getTime(),
+      isConclusion: remainingAmount > 0 ? false : true,
+      isCancel: false,
+      currentAmount: remainingAmount,
+      concludedAmount: sellConcludedAmount
+    })
+  );
+  // console.log("> userSellingOrders 추가:", userSellingOrders.toJS());
+
+  return {
+    userSellingOrders: userSellingOrders,
+    userBuyingOrders: List(userBuyingOrdersJS),
+    concludedOrders,
+    // remainingTotalPrice,
+    remainingAmount,
+    selledTotalAmount,
+    selledTotalPrice,
     topConcludedOrderPrice,
     lowConcludedOrderPrice
   };
@@ -517,31 +702,46 @@ export const calcTodayPrice = ({
   tradePrice,
   buyedTotalAmount,
   remainingBuyAmount,
+  selledTotalAmount,
   remainingSellAmount
 }) => {
   let selectedCoinJS = selectedCoin.toJS();
   let coinsJS = coins.toJS();
   const coinId = selectedCoinJS.coinId;
   const coinIndex = coinsJS.findIndex(item => item.coinId === coinId);
-  console.log("---> calcTodayPrice: ", tradeVolume);
+  // console.log(
+  //   "---> calcTodayPrice: ",
+  //   selectedCoinJS,
+  //   coinsJS,
+  //   currentPrice,
+  //   topPrice,
+  //   lowPrice,
+  //   tradeVolume,
+  //   tradePrice
+  // );
 
-  // 현재가
-  selectedCoinJS.currentPrice = currentPrice;
-  selectedCoinJS.currentPriceCommSet = commSet(currentPrice);
+  if (currentPrice !== undefined) {
+    // 현재가
+    selectedCoinJS.currentPrice = currentPrice;
+    selectedCoinJS.currentPriceCommSet = commSet(currentPrice);
 
-  // 현재가 - 전일종가 차이
-  selectedCoinJS.dayBeforeDiff =
-    selectedCoinJS.currentPrice - selectedCoinJS.dayBeforePrice;
-  selectedCoinJS.dayBeforeDiffCommSet = commSet(selectedCoinJS.dayBeforeDiff);
+    // 현재가 - 전일종가 차이
+    selectedCoinJS.dayBeforeDiff =
+      selectedCoinJS.currentPrice - selectedCoinJS.dayBeforePrice;
+    selectedCoinJS.dayBeforeDiffCommSet = commSet(selectedCoinJS.dayBeforeDiff);
 
-  // 전일대비 증감률
-  selectedCoinJS.movingRatio = calcRatio(
-    selectedCoinJS.dayBeforePrice,
-    currentPrice
-  );
+    // 전일대비 증감률
+    selectedCoinJS.movingRatio = calcRatio(
+      selectedCoinJS.dayBeforePrice,
+      currentPrice
+    );
+  }
+
+  if (currentPrice) {
+  }
 
   // 고가
-  if (selectedCoinJS.todayTopPrice < topPrice) {
+  if (topPrice !== undefined && selectedCoinJS.todayTopPrice < topPrice) {
     selectedCoinJS.todayTopPrice = topPrice;
     selectedCoinJS.todayTopPriceCommSet = commSet(topPrice);
     selectedCoinJS.todayTopPriceRatio = calcRatio(
@@ -551,7 +751,7 @@ export const calcTodayPrice = ({
   }
 
   // 저가
-  if (selectedCoinJS.todayLowerPrice > lowPrice) {
+  if (lowPrice !== undefined && selectedCoinJS.todayLowerPrice > lowPrice) {
     selectedCoinJS.todayLowerPrice = lowPrice;
     selectedCoinJS.todayLowerPriceCommSet = commSet(lowPrice);
     selectedCoinJS.todayLowerPriceRatio = calcRatio(
@@ -568,21 +768,127 @@ export const calcTodayPrice = ({
   // 총 거래금액
   selectedCoinJS.todayTotalTradePrice += tradePrice;
 
-  // 매수 시: 매도 잔량 반영
+  // 매수 시: 매도 잔량 감소
   if (buyedTotalAmount) {
     selectedCoinJS.remainingSellAmount -= buyedTotalAmount;
   }
-  // 매수 잔량 반영
+  // 매수 잔량 추가
   if (remainingBuyAmount) {
     selectedCoinJS.remainingBuyAmount += remainingBuyAmount;
+  }
+
+  // 매도 시: 매수 잔량 감소
+  if (selledTotalAmount) {
+    selectedCoinJS.remainingBuyAmount -= selledTotalAmount;
+  }
+  // 매도 잔량 추가
+  if (remainingSellAmount) {
+    selectedCoinJS.remainingSellAmount += remainingSellAmount;
   }
 
   // coins 반영
   coinsJS[coinIndex] = selectedCoinJS;
 
-  console.log("> result: ", selectedCoinJS, coinsJS);
+  // console.log("> result: ", selectedCoinJS, coinsJS);
   return {
     selectedCoin: Map(selectedCoinJS),
     coins: List(coinsJS)
   };
+};
+
+/* ===== 차트 데이터 셋팅
+  @params(obj)
+    chartData(immList)
+    coinId(int)
+    topPrice(int)
+    currentPrice(int)
+    lowPrice(int)
+    concludedTime(timestamp)
+  @return
+    chartData(immList)
+*/
+export const setChartData = ({
+  chartData,
+  coinId,
+  topPrice,
+  currentPrice,
+  lowPrice,
+  concludedTime
+}) => {
+  const coinIndex = chartData.findIndex(item => item.get("coinId") === coinId);
+  const data = chartData.getIn([coinIndex, "data"]);
+  let dataJS = data.toJS();
+  let lastestData;
+  let diffTime;
+  let updateData = {
+    concludedTime,
+    x: new Date(concludedTime),
+    y: [
+      currentPrice,
+      topPrice || currentPrice,
+      lowPrice || currentPrice,
+      currentPrice
+    ]
+  };
+  // 업데이트 데이터
+  // console.log("> dataJS", dataJS);
+  // console.log(
+  //   "---> setChartData: ",
+  //   // coinIndex,
+  //   // data.size,
+  //   currentPrice,
+  //   topPrice,
+  //   lowPrice
+  // );
+
+  // data가 없을 경우 바로 업데이트
+  if (!dataJS.length) {
+    return chartData.setIn([coinIndex, "data", 0], Map(updateData));
+  }
+
+  // 하나 이상의 데이터가 있을 경우 데이터 셋팅
+  lastestData = dataJS[dataJS.length - 1];
+  // diffTime = (concludedTime - lastestData.concludedTime) / 1000 / 60;
+  diffTime = new Date(concludedTime).getMinutes() - lastestData.x.getMinutes();
+
+  // console.log(
+  //   "> data info: ",
+  //   new Date(concludedTime).getMinutes(),
+  //   lastestData.x.getMinutes(),
+  //   diffTime
+  // );
+
+  // console.log("> data info: ", dataJS, lastestData, diffTime, updateData);
+
+  // 마지막 스틱으로 부터 1분 뒤 체결되었을 경우
+  if (diffTime > 10) {
+    // console.log("> over 1 minute");
+    return chartData.setIn([coinIndex, "data", data.size], Map(updateData));
+  }
+
+  // console.log("> lastestData: ", lastestData.x, updateData);
+  // console.log("> lastestData: ", lastestData.y);
+  // console.log("> topPrice: ", topPrice, lastestData.y[1]);
+  // console.log("> lowPrice: ", lowPrice, lastestData.y[2]);
+  // console.log("> closePrice: ", currentPrice, lastestData.y[3]);
+  // top price update
+  if (topPrice > lastestData.y[1]) {
+    lastestData.y[1] = topPrice;
+  }
+  // low price update
+  if (lowPrice < lastestData.y[2]) {
+    lastestData.y[2] = lowPrice;
+  }
+  // close price update
+  lastestData.y[3] = currentPrice;
+  // console.log(
+  //   "> return :",
+  //   lastestData.x
+  //   // chartData.setIn([coinIndex, "data", data.size - 1], Map(updateData)).toJS()
+  // );
+  return chartData.setIn([coinIndex, "data", data.size - 1], Map(lastestData));
+  // topPrice 비교
+  // if(lastestData.x[1] < topPrice||currentPrice){
+
+  // }
 };

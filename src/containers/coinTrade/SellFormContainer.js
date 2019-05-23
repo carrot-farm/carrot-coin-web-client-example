@@ -153,19 +153,14 @@ class SellFormContainer extends Component {
     let price = sellingPrice;
     let totalPrice = e.sendData.number;
     let volume = calcVolume(price, totalPrice);
-    console.log(
-      "---> handleBuyingTotalPriceChange: ",
-      sellingPrice,
-      e.sendData,
-      volume
-    );
+    // console.log(
+    //   "---> handleBuyingTotalPriceChange: ",
+    //   sellingPrice,
+    //   e.sendData,
+    //   volume
+    // );
 
-    // if (ownPrice <= totalPrice) {
-    //   volume = calcVolume(price, ownPrice);
-    //   totalPrice = calcTotalPrice(price, volume);
-    //   price = calcPrice(volume, totalPrice);
-    // }
-    console.log("> result: ", volume, price, totalPrice);
+    // console.log("> result: ", volume, price, totalPrice);
     SellingFormActions.setVolume(volume);
     SellingFormActions.setPrice(price);
     SellingFormActions.setTotalPrice(totalPrice);
@@ -174,15 +169,19 @@ class SellFormContainer extends Component {
   // sumit handle
   handleSubmitClick = e => {
     const {
+      ownCoins,
       StockActions,
       sellingVolume,
       sellingPrice,
       sellingTotalPrice,
-      selectedCoin,
-      selectedMyCoin
+      selectedCoin
     } = this.props;
     const minimumVolume = selectedCoin.get("minimumVolume");
-    const ownAmount = selectedMyCoin.get("ownAmount");
+    const selectedCoinId = selectedCoin.get("coinId");
+    const ownCoinIndex = ownCoins.findIndex(
+      item => item.get("coinId") === selectedCoinId
+    );
+    const ownAmount = ownCoins.getIn([ownCoinIndex, "ownAmount"]);
     e.preventDefault();
     // console.log(
     //   "---> handleBuyClick: ",
@@ -216,7 +215,7 @@ class SellFormContainer extends Component {
   render() {
     const {
       selectedCoin,
-      selectedMyCoin,
+      ownCoins,
       sellingVolumeCommset,
       sellingPriceCommset,
       sellingTotalPriceCommset,
@@ -224,13 +223,18 @@ class SellFormContainer extends Component {
     } = this.props;
     const volumeUnit = selectedCoin.get("coinUnit");
     const minimumOrder = selectedCoin.get("minimumVolume");
-    let topValueCommset = selectedMyCoin.toJS().ownAmount;
+    const selectedCoinId = selectedCoin.get("coinId");
+    const ownCoinIndex = ownCoins.findIndex(
+      item => item.get("coinId") === selectedCoinId
+    );
+    const ownAmount = ownCoins.getIn([ownCoinIndex, "ownAmount"]);
+    // console.log("> sellFormContainer.js.ownAmount: ", ownAmount);
 
     return (
       <OrderForm
         topValueText={"매도가능수량"}
         topValueUnit={volumeUnit}
-        topValueCommset={topValueCommset}
+        topValueCommset={ownAmount}
         volumeText={"매도수량"}
         volumeUnit={volumeUnit}
         volumeCommset={sellingVolumeCommset}

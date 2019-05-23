@@ -7,10 +7,13 @@ import * as stockActions from "store/modules/stock";
 import * as buyingFormActions from "store/modules/buyingForm";
 import * as sellingFormActions from "store/modules/sellingForm";
 import Order from "components/coinTrade/Order";
+import { autoDecimalRound } from "../../lib/common";
 
 class OrderContainer extends Component {
   componentDidMount() {
     const { StockActions } = this.props;
+    // 더미 데이터 생성
+    StockActions.setDumyData();
     StockActions.updateOrders();
   }
 
@@ -39,7 +42,10 @@ class OrderContainer extends Component {
       myInfo,
       activeForm
     } = this.props;
-    // console.log("---> handlePriceClick: ", activeForm);
+    if (price === undefined) {
+      return false;
+    }
+    // console.log("---> handlePriceClick: ", price);
     if (activeForm === "buyForm") {
       BuyingFormActions.setCalcPrice({
         orderPrice: price,
@@ -48,6 +54,44 @@ class OrderContainer extends Component {
     } else if (activeForm === "sellForm") {
       SellingFormActions.setCalcPrice(price);
     }
+  };
+
+  // ===== 매수 / 매도 잔량 계산
+  calcRemaining = () => {
+    const { selectedCoin, buyingOrders, sellingOrders } = this.props;
+    const coinId = selectedCoin.get("coinId");
+    const buyCoinIndex = buyingOrders.findIndex(item => item.coinId === coinId);
+    const sellCoinIndex = sellingOrders.findIndex(
+      item => item.coinId === coinId
+    );
+    let buyTotalAmout = 0;
+    let sellTotalAmout = 0;
+
+    if (coinId === undefined) {
+      return {
+        buyTotalAmout,
+        sellTotalAmout
+      };
+    }
+
+    if (buyCoinIndex >= 0) {
+      buyingOrders.getIn([buyCoinIndex, "orders"]).map(item => {
+        buyTotalAmout += item.orderAmount;
+      });
+    }
+    if (sellCoinIndex >= 0) {
+      sellingOrders.getIn([sellCoinIndex, "orders"]).map(item => {
+        sellTotalAmout += item.orderAmount;
+      });
+    }
+
+    buyTotalAmout = autoDecimalRound(buyTotalAmout);
+    sellTotalAmout = autoDecimalRound(sellTotalAmout);
+
+    return {
+      buyTotalAmout,
+      sellTotalAmout
+    };
   };
 
   // ===== 랜더링
@@ -59,7 +103,8 @@ class OrderContainer extends Component {
       sellingOrders
     } = this.props;
     const _selectedCoin = selectedCoin.toJS();
-    // console.log(selectedCoin);
+    const { buyTotalAmout, sellTotalAmout } = this.calcRemaining();
+
     return (
       <Order
         selectedCoin={_selectedCoin}
@@ -68,6 +113,8 @@ class OrderContainer extends Component {
         sellingOrders={sellingOrders}
         activeFormClick={this.activeFormClick}
         handlePriceClick={this.handlePriceClick}
+        buyTotalAmout={buyTotalAmout}
+        sellTotalAmout={sellTotalAmout}
       />
     );
   }

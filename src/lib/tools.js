@@ -14,6 +14,10 @@ export const dateFormat = (_date, _format) => {
       "-" +
       addZero(date.getDate(), 2)
     );
+  } else if (format === "MM-dd") {
+    return addZero(date.getMonth() + 1, 2) + "-" + addZero(date.getDate(), 2);
+  } else if (format === "HH:mm") {
+    return addZero(date.getHours(), 2) + ":" + addZero(date.getMinutes(), 2);
   }
 };
 
@@ -224,8 +228,8 @@ export const jsonSort = (list, field, sortDirection) => {
       return a[field] > b[field] ? -1 : a[field] < b[field] ? 1 : 0;
     });
   }
+  // asc
   return list.sort((a, b) => {
-    // asc
     return a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0;
   });
 };

@@ -4,12 +4,10 @@ import classNames from "classnames/bind";
 import styles from "./styles.scss";
 import BuyingFormContainer from "containers/coinTrade/BuyingFormContainer";
 import SellFormContainer from "containers/coinTrade/SellFormContainer";
-// import SellingForm from "../SellingForm";
-import CancelForm from "../CancelForm";
+import CancelFormContainer from "containers/coinTrade/CancelFormContainer";
+import TradeHistoryContainer from "containers/coinTrade/TradeHistoryContainer";
 import OrderEtcInfo from "../OrderEtcInfo";
-// import TradeHistory from "../TradeHistory";
 import { sortOrders } from "lib/common";
-// import { commSet, calcRatio, jsonSort } from "lib/tools";
 
 const cx = classNames.bind(styles);
 
@@ -19,7 +17,9 @@ const Order = ({
   buyingOrders,
   sellingOrders,
   activeFormClick,
-  handlePriceClick
+  handlePriceClick,
+  buyTotalAmout,
+  sellTotalAmout
 }) => {
   const {
     coinName,
@@ -31,7 +31,7 @@ const Order = ({
     // dayBeforePrice,
     dayBeforePriceCommSet,
     dayBeforeDiffCommset,
-    todayTotalTradePrice,
+    todayTotalTradeVolume,
     todayTopPriceCommSet,
     todayTopPriceRatio,
     todayLowerPriceCommSet,
@@ -50,24 +50,25 @@ const Order = ({
   } else if (movingRatio < 0) {
     currentTextColor = "blue-text";
   }
-
   // 주문 filter, sort, commset
-  if (coinId !== undefined && buyingOrders.size > 0) {
+  if (coinId !== undefined) {
     // 매수 주문
-    if (buyingOrders.size > 0) {
-      _buyingOrders = sortOrders(buyingOrders.toJS(), selectedCoin, false);
-    }
+    _buyingOrders = sortOrders(
+      buyingOrders.toJS(),
+      selectedCoin,
+      false,
+      false,
+      buyingOrders.size <= 0 ? true : false
+    );
     // 매도 주문
-    if (sellingOrders.size > 0) {
-      _sellingOrders = sortOrders(
-        sellingOrders.toJS(),
-        selectedCoin,
-        true,
-        true
-      );
-      // _sellingOrders = jsonSort(_sellingOrders, "orderPrice", false);
-      // console.log("----", _sellingOrders);
-    }
+    _sellingOrders = sortOrders(
+      sellingOrders.toJS(),
+      selectedCoin,
+      true,
+      true,
+      sellingOrders.size <= 0 ? true : false
+    );
+    // console.log("> ", _sellingOrders, _buyingOrders);
   }
 
   return (
@@ -95,7 +96,7 @@ const Order = ({
         <div className={cx("volume-container")}>
           <span className={cx("text")}>거래량</span>
           <span className={cx("volume")}>
-            {todayTotalTradePrice}&nbsp;{coinUnit}
+            {todayTotalTradeVolume}&nbsp;{coinUnit}
           </span>
         </div>
       </div>
@@ -186,7 +187,7 @@ const Order = ({
                   <td className={cx("form-section")} rowSpan="10" colSpan="3">
                     {activeForm === "buyForm" && <BuyingFormContainer />}
                     {activeForm === "sellForm" && <SellFormContainer />}
-                    {activeForm === "cancelForm" && <CancelForm />}
+                    {activeForm === "cancelForm" && <CancelFormContainer />}
                   </td>
                 </tr>
               );
@@ -244,7 +245,7 @@ const Order = ({
                     rowSpan="10"
                     colSpan="3"
                   >
-                    {/* <TradeHistory /> */}
+                    <TradeHistoryContainer />
                   </td>
                 </tr>
               );
@@ -274,12 +275,12 @@ const Order = ({
           <tr>
             <td className={cx("selling-residual-quantity-container ")}>
               <span className={cx("text")}>매도잔량</span>
-              <span className={cx("quantity")}>{remainingSellAmount}</span>
+              <span className={cx("quantity")}>{sellTotalAmout}</span>
             </td>
             <td colSpan="2" />
             <td className={cx("buying-residual-quantity-container ")}>
               <span className={cx("text")}>매수잔량</span>
-              <span className={cx("quantity")}>{remainingBuyAmount}</span>
+              <span className={cx("quantity")}>{buyTotalAmout}</span>
             </td>
           </tr>
         </tbody>

@@ -14,7 +14,8 @@ class TradeContainer extends Component {
     // 코인정보 초기화
     const intializeCoins = initializeCoins(coins);
     StockActions.setCoinList(List(intializeCoins.toJS()));
-    // 첫 데이터 셋팅
+
+    // 코인 선택
     StockActions.selectCoin(0);
   }
 
