@@ -37,7 +37,7 @@ class TradeHeader extends Component {
             </ul>
           </div>
           <div className={cx("right-buttons-container")}>
-            <div className={cx("login-button-container")}>
+            {/* <div className={cx("login-button-container")}>
               <Link to="/login">
                 <Button variant="outlined" className={cx("login-button")}>
                   로그인
@@ -50,7 +50,7 @@ class TradeHeader extends Component {
                   회원 가입
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </Header>
